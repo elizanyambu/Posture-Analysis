@@ -23,6 +23,17 @@ body_parts = {
     "RForearm": ("RElbow", "RWrist"),
     "NeckNose": ("Neck", "Nose")
 }
+# anthropometric features in Gianaria and Grangett0
+body_parts_g_and_g = {
+    "LArm": ['LShoulder', 'LElbow', 'LWrist'],
+    "RArm": ['RShoulder', 'RElbow', 'RWrist'],
+    "LLeg": ['LHip', 'LKnee', 'LAnkle'],
+    "RLeg": ['RHip', 'RKnee', 'RAnkle'],
+    "torso": ['Nose', 'Neck', 'MidHip'],
+    "height": []
+    # ....
+}
+
 path_to_training_data = r'training_data'
 
 def main():
@@ -239,8 +250,8 @@ def feature_vector(df, videoID):
     for column in df:
         feature_space.update({
             column + '_mean': df[column].mean(),
-            column + '_median': df[column].median(),
-            column + '_STD': df[column].std()
+            column + '_STD': df[column].std(),
+            column + '_mad': df[column].mad()
         })
 
     test = pd.DataFrame(feature_space, index=[VIDEO_TITLE])

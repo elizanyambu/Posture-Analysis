@@ -17,3 +17,8 @@ Die Ergebnisse aus Schritt 2 können nun durch die Anwendung verschiednener ML A
 Beispiele:
 *  SVM: [JN Colab: ML_SVM.ipynb](https://colab.research.google.com/drive/19jsMg7c5btJMSn4qFYl0lL-MwhaWhCn1)
 *  Decision Tree: [JN Colab: ML_DecisionTree.ipynb](https://colab.research.google.com/drive/14-I_LvbrwUWaznhii_3X3YbqRezZAySC#scrollTo=7-O5r3wDthi3)
+
+# Voraussetzungen
+[prep_pipeline.py](prep_pipeline.py):
+*  Pandas
+*  Numpy
