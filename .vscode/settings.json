@@ -1,6 +1,0 @@
-{
-    "python.pythonPath": "C:\\Users\\niens\\miniconda3\\envs\\py36\\python.exe",
-    "python.linting.pylintEnabled": true,
-    "python.linting.enabled": true,
-    "terminal.integrated.shellArgs.windows": ["/K", " C:\\Users\\niens\\miniconda3\\Scripts\\activate.bat C:\\Users\niens\\miniconda3 & conda activate py36"]
-}
