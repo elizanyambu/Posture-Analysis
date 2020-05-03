@@ -107,7 +107,3 @@ python/caffe/proto/
 # Testing videos
 *.mp4
 *.mov
-
-
-######################### CSV Files #########################
-*.csv
