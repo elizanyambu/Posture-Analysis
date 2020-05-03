@@ -6,6 +6,7 @@ from math import degrees
 import glob
 #
 from cleansing import *
+from feature_extraction import *
 
 VIDEO_TITLE = ''
 df = pd.DataFrame()
@@ -31,9 +32,21 @@ body_parts_g_and_g = {
     "RArm": ['RShoulder', 'RElbow', 'RWrist'],
     "LLeg": ['LHip', 'LKnee', 'LAnkle'],
     "RLeg": ['RHip', 'RKnee', 'RAnkle'],
-    "torso": ['Nose', 'Neck', 'MidHip'],
-    "height": []
+    "torso": ['Nose', 'Neck', 'MidHip']
+    # "height": []
     # ....
+}
+
+angle_dict = {
+    'LKneeAngle': ['LThigh','LLowerleg'],
+    'RKneeAngle': ['RThigh','RLowerleg'],
+    'LFootAngle': ['LFoot','LLowerleg'],
+    'RFootAngle': ['RFoot','LLowerleg'],
+    'LElbowAngle': ['LUpperArm','LForearm'],
+    'RElbowAngle': ['RUpperArm','RForearm'],
+    'UpperBodyAngle': ['Spine', (0,1)],
+    'LUpperArmAngle': ['LUpperArm',(0,1)],
+    'RUpperArmAngle': ['RUpperArm',(0,1)],
 }
 
 path_to_training_data = r'training_data'
@@ -51,7 +64,7 @@ def main():
             print('\t01 - Data cleansed')
             # idx = pd.IndexSlice
             # print(df.loc[:, idx[:, 'length']].std())
-            features = feature_extraction(df)
+            features = feature_calc(df)
             print('\t02 - Features calculated')
             vector = feature_vector(features, filename)
             print('\t03 - Vector extracted')
@@ -89,7 +102,7 @@ def cleansing1(df):
     return df
 #
 #
-def feature_extraction(df):
+def feature_calc(df):
     """# Entfernungsparameter berechnen"""
     feature_df = pd.DataFrame()
 
@@ -105,49 +118,16 @@ def feature_extraction(df):
     feature_df['Dy2'] = abs(df['Nose']['Y']-((df['LKnee']['Y']+df['RKnee']['Y'])/2))
     feature_df['Dy3'] = abs(df['LAnkle']['Y']-df['RAnkle']['Y'])
 
-    # feature_df['Linker Fuß zu Oberkörper X'] = (df['LAnkle']['X']-df['LHip']['X'])
-    # feature_df['Linkes Knie zu Oberkörper X'] = (df['LKnee']['X']-df['LHip']['X'])
-    # feature_df['Rechter Fuß zu Oberkörper X'] = (df['RAnkle']['X']-df['RHip']['X'])
+    # Features of relative distance (FoRD) based on Ganaria and Grangetto 
+    FoRD_df = pd.DataFrame()
+    for body_part in body_parts_g_and_g:
+        FoRD_df[body_part] = FoRD(df, body_parts_g_and_g[body_part])
+    
+    # Winkelparameter berechnen
+    angle_df = get_angle_features(df, angle_dict)
 
-    """# Winkelparameter berechnen
-
-    ## Funktion zur Berechnung der Vektorlänge berechnen
-    """
-
-    def dotproduct(v1, v2):
-        return sum((a*b) for a, b in zip(v1, v2))
-
-    def length(v):
-        return math.sqrt(dotproduct(v, v))
-
-    def angle(v1, v2):
-        if isinstance(v1, tuple) and isinstance(v2, tuple):
-            try:
-                result = degrees(math.acos(dotproduct(v1, v2) / (length(v1) * length(v2))))
-            except:
-                result = np.NaN
-        else:
-            result = np.NaN
-        return result
-
-    """## Berechnung zum feature_df hnzufügen"""
-    feature_df['LKneeAngle'] = df.apply(lambda x: 180-angle(x['LThigh', 'vector'],x['LLowerleg', 'vector']), axis=1)
-    feature_df['RKneeAngle'] = df.apply(lambda x: 180-angle(x['RThigh', 'vector'],x['RLowerleg', 'vector']), axis=1)
-
-    feature_df['LFootAngle'] = df.apply(lambda x: 180-angle(x['LFoot', 'vector'],x['LLowerleg', 'vector']), axis=1)
-    feature_df['RFootAngle'] = df.apply(lambda x: 180-angle(x['RFoot', 'vector'],x['RLowerleg', 'vector']), axis=1)
-
-    feature_df['LElbowAngle'] = df.apply(lambda x: 180-angle(x['LUpperArm', 'vector'],x['LForearm', 'vector']), axis=1)
-    feature_df['RElbowAngle'] = df.apply(lambda x: 180-angle(x['RUpperArm', 'vector'],x['RForearm', 'vector']), axis=1)
-
-    feature_df['UpperBodyAngle'] = df.apply(lambda x: angle(x['Spine', 'vector'],(0,1)), axis=1)
-
-    feature_df['RUpperArmAngle'] = df.apply(lambda x: angle(x['RUpperArm', 'vector'],(0,1)), axis=1)
-    feature_df['LUpperArmAngle'] = df.apply(lambda x: angle(x['LUpperArm', 'vector'],(0,1)), axis=1)
-
-    """ ## Daten glätten """
-    for col in feature_df.columns:
-        feature_df[col] = feature_df[col].rolling(window=5).mean()
+    # Ergebnis-dfs zusammenführen
+    feature_df = pd.concat([feature_df, angle_df, FoRD_df], axis=1, sort=False)
     
     return feature_df
 #
