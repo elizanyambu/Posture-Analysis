@@ -3,18 +3,20 @@ import numpy as np
 import math
 from math import degrees
 
-def main():
-    df = pd.read_csv('training_data/gesund_andersson_Person010_1_raw.csv', header=[0,1])
-    #print(df)
-    # print(distance(df['LAnkle'], df['RAnkle']))
-    # print(FoRD(df, name='LLeg', joints=['LAnkle', 'LKnee', 'LHip']).mean())
-    # print(FoS(df['RKnee']))
-    # print(df['RKnee'].mad())
-    # print(get_cycle_time(df))
-    # print(get_avg_height(df))
+# def main():
+#     df = pd.read_csv('training_data/gesund_andersson_Person010_1_raw.csv', header=[0,1])
+#     #print(df)
+#     # print(distance(df['LAnkle'], df['RAnkle']))
+#     # print(FoRD(df, name='LLeg', joints=['LAnkle', 'LKnee', 'LHip']).mean())
+#     # print(FoS(df['RKnee']))
+#     # print(df['RKnee'].mad())
+#     # print(get_cycle_time(df))
+#     # print(get_avg_height(df))
 
 def distance(jointA, jointB):
-    return np.array(np.linalg.norm(jointA.values - jointB.values, axis=1))
+    result = np.array(np.linalg.norm(jointA.values - jointB.values, axis=1))
+    print(result)
+    return result
 
 def dotproduct(v1, v2):
     return sum((a*b) for a, b in zip(v1, v2))
@@ -32,27 +34,31 @@ def angle(v1, v2):
         result = np.NaN
     return result
 
-def FoRD(df, name, joints):
+def FoRD(df, joints):
     """ 
         Calculates the Features of Relative Distance as defined in 
         Gianaria and Grangetto 2019.
 
-        Parameter 
+        Parameter \n
             df:     pd.DataFrame() containing the joint coordinates over time/frames
-            name:   name of the output feature (e.g. 'LArm')
             joints: ordered list of joint names whose distance should be calculated 
 
         Returns
             pd.DataFrame: df[name] containing the calculated distance
 
     """
-    for i in range(len(joints)-1) :
-        if i == 0:
-            ford = distance(df[joints[i]], df[joints[i+1]])
-        else:
-            temp = distance(df[joints[i]], df[joints[i+1]])
-            ford = np.add(ford, temp)
-    return pd.DataFrame(ford, columns=[name])
+    temp=pd.DataFrame()
+    # Durch alle Joints iterieren und Abstand zum vorigen Joint (i-1) berechnen
+    for i in range(len(joints)-1):
+        temp[i] = df[joints].apply(
+            lambda x: 
+                np.linalg.norm(x[joints[i]].values - x[joints[i+1]].values), 
+            axis=1
+        )
+        # letzte Spalte (i+1) ist immer Summe der vorigen
+        if i>0:
+            temp[i+1] = temp[i] + temp[i-1] 
+    return temp[len(joints)-1]
 
 def FoS(df):
     return df.mad()
