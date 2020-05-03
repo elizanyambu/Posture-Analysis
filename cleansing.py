@@ -17,31 +17,31 @@ body_parts = {
     "NeckNose": ("Neck", "Nose")
 }
 
-def main():
-    df = pd.read_csv('training_data/gesund8_01_raw.csv', header=[0,1])
+# def main():
+#     df = pd.read_csv('training_data/gesund8_01_raw.csv', header=[0,1])
     
-    functions = [trim_gait_dataset, fill_missing_values, smooth_data]
-    fig = plt.figure(figsize=(10,30))
-    ax = fig.add_subplot(len(functions)+1,1,1)
-    ax.plot(df)
-    ax.set_title('raw')
-    i = 2
-    for funct in functions:
-        df = funct(df)
-        ax = fig.add_subplot(len(functions)+1,1,i)
-        ax.plot(df)
-        ax.set_title(str(i))
-        i+=1
-    # plt.show()
+#     functions = [trim_gait_dataset, fill_missing_values, smooth_data]
+#     fig = plt.figure(figsize=(10,30))
+#     ax = fig.add_subplot(len(functions)+1,1,1)
+#     ax.plot(df)
+#     ax.set_title('raw')
+#     i = 2
+#     for funct in functions:
+#         df = funct(df)
+#         ax = fig.add_subplot(len(functions)+1,1,i)
+#         ax.plot(df)
+#         ax.set_title(str(i))
+#         i+=1
+#     # plt.show()
 
-    df = calc_body_parts(df)
-    # print(df.head())
+#     df = calc_body_parts(df)
+#     # print(df.head())
 
-    df = scale_coordinates(df)
-    # print(df)
+#     df = scale_coordinates(df)
+#     # print(df)
 
-    df = clean_by_joint_length(df)
-    # print(df)   
+#     df = clean_by_joint_length(df)
+#     # print(df)   
 
 def trim_gait_dataset(df):
     joints_to_be_detected = ['RAnkle', 'LAnkle', 'LBigToe', 'RBigToe']
@@ -153,4 +153,4 @@ def calc_body_parts(df, body_parts=body_parts):
     
     return df
 
-main()
+# main()
