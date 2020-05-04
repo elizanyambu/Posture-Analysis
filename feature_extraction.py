@@ -88,11 +88,11 @@ def get_cycle_time(df, fps = 30):
     """ 
         Calculates the Cycle Time of a given gait
 
-        Parameter 
-            df:     pd.DataFrame() containing the joint coordinates over time/frames
+        ### Parameter \n
+            df:     pd.DataFrame() containing the joint coordinates over time/frames \n
             [fps]:  Frames per second of the source gait video
 
-        Returns
+        ### Returns
             float:  cycle time in seconds
 
     """
@@ -132,6 +132,9 @@ def get_cycle_time(df, fps = 30):
         if past_frame > 0:
             cycle_times.append(i - past_frame)
         past_frame = i
+
+    # Aufräumen
+    df = df.drop(['Dx1_min', 'Dx1_max', 'temp_Dx1'], axis=1)
 
     # Cycle length in frames
     cycle_length_frames = (sum(cycle_times)/len(cycle_times))
