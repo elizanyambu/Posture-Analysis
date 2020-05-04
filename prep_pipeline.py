@@ -13,7 +13,6 @@ VIDEO_TITLE = ''
 df = pd.DataFrame()
 feature_space = {}
 
-path_to_training_data = r'training_data'
 
 def main():
     print('This is main')
@@ -38,9 +37,8 @@ def main():
         #     print('Error reading file: ' + filename)
 
     result = pd.concat(li, axis=0, ignore_index=True)
-    result = result.drop(['Dx1_min_STD','Dx1_min_mean', 'Dx1_max_STD', 'Dx1_max_mean'], axis = 1)
     result['label'] = result.apply(lambda x: 'ungesund' if ('ungesund' in x['VideoID']) else 'gesund', axis=1)
-    result.to_csv('result_data.csv', index=False)
+    result.to_csv(output_file, index=False)
     print(result)
 #
 #

@@ -1,10 +1,14 @@
 
-FOS = False
-FORD = False
+FOS = True
+FORD = True
 YANG = True
-GAIT_MED = False
-ANGLES = False
+GAIT_MED = True
+ANGLES = True
 
+# Folder that contains all relevant _raw.csv files 
+path_to_training_data = r'training_data'
+# Outputfile
+output_file = 'result_data_All.csv'
 
 # Definition der zu berechnenden Körperteile ("Knochen")
 body_parts = {
