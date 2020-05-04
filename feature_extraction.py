@@ -58,7 +58,7 @@ def FoRD(df, joints):
         # letzte Spalte (i+1) ist immer Summe der vorigen
         if i>0:
             temp[i+1] = temp[i] + temp[i-1] 
-    return temp[len(joints)-1]
+    return temp[len(temp.columns)-1]
 
 def FoS(df):
     return df.mad()
@@ -78,10 +78,11 @@ def get_angle_features(df, angledict):
     return output_df
 
 def get_stride_length(df):
+    # TODO
     df['Dx1_min'] = df.Dx1[(df.Dx1.shift(1) > df.Dx1) & (df.Dx1.shift(-1) > df.Dx1)]
     df['Dx1_max'] = df.Dx1[(df.Dx1.shift(1) < df.Dx1) & (df.Dx1.shift(-1) < df.Dx1)]
 
-    return 
+    return 0
 
 def get_cycle_time(df, fps = 30):
     """ 
