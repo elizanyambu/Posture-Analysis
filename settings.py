@@ -1,3 +1,11 @@
+
+FOS = False
+FORD = False
+YANG = True
+GAIT_MED = False
+ANGLES = False
+
+
 # Definition der zu berechnenden Körperteile ("Knochen")
 body_parts = {
     "LThigh": ("LHip", "LKnee"),

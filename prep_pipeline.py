@@ -30,7 +30,7 @@ def main():
         # print(df.loc[:, idx[:, 'length']].std())
         features = feature_calc(df)
         print('\t02 - Features calculated')
-        vector = feature_vector(features, filename)
+        vector = feature_vector(features, df, filename)
         print('\t03 - Vector extracted')
         li.append(vector)
         print(filename + ' finished\n')
@@ -69,26 +69,29 @@ def cleansing1(df):
 def feature_calc(df):
     """# Entfernungsparameter berechnen"""
     feature_df = pd.DataFrame()
+    if YANG:
+        feature_df['Dx1'] = abs(df['LAnkle']['X']-df['RAnkle']['X'])
+        feature_df['Dx2'] = abs(df['LElbow']['X']-df['RElbow']['X'])
+        feature_df['Dx3'] = abs(df['LWrist']['X']-df['RWrist']['X'])
+        feature_df['Dx4'] = abs(df['Nose']['X']-((df['LAnkle']['X']+df['RAnkle']['X'])/2))
+        feature_df['Dx5'] = abs(df['MidHip']['X']-((df['LAnkle']['X']+df['RAnkle']['X'])/2))
 
-    feature_df['Dx1'] = abs(df['LAnkle']['X']-df['RAnkle']['X'])
-    feature_df['Dx2'] = abs(df['LElbow']['X']-df['RElbow']['X'])
-    feature_df['Dx3'] = abs(df['LWrist']['X']-df['RWrist']['X'])
-    feature_df['Dx4'] = abs(df['Nose']['X']-((df['LAnkle']['X']+df['RAnkle']['X'])/2))
-    feature_df['Dx5'] = abs(df['MidHip']['X']-((df['LAnkle']['X']+df['RAnkle']['X'])/2))
+        feature_df['Dx7'] = abs(df['LShoulder']['X']-df['RShoulder']['X'])
 
-    feature_df['Dx7'] = abs(df['LShoulder']['X']-df['RShoulder']['X'])
-
-    feature_df['Dy1'] = abs(df['Nose']['Y']-((df['LAnkle']['Y']+df['RAnkle']['Y'])/2))
-    feature_df['Dy2'] = abs(df['Nose']['Y']-((df['LKnee']['Y']+df['RKnee']['Y'])/2))
-    feature_df['Dy3'] = abs(df['LAnkle']['Y']-df['RAnkle']['Y'])
+        feature_df['Dy1'] = abs(df['Nose']['Y']-((df['LAnkle']['Y']+df['RAnkle']['Y'])/2))
+        feature_df['Dy2'] = abs(df['Nose']['Y']-((df['LKnee']['Y']+df['RKnee']['Y'])/2))
+        feature_df['Dy3'] = abs(df['LAnkle']['Y']-df['RAnkle']['Y'])
 
     # Features of relative distance (FoRD) based on Ganaria and Grangetto 
     FoRD_df = pd.DataFrame()
-    for body_part in body_parts_g_and_g:
-        FoRD_df[body_part] = FoRD(df, body_parts_g_and_g[body_part])
+    if FORD:
+        for body_part in body_parts_g_and_g:
+            FoRD_df[body_part] = FoRD(df, body_parts_g_and_g[body_part])
     
     # Winkelparameter berechnen
-    angle_df = get_angle_features(df, angle_dict)
+    angle_df = pd.DataFrame()
+    if ANGLES:
+        angle_df = get_angle_features(df, angle_dict)
 
     # Ergebnis-dfs zusammenführen
     feature_df = pd.concat([feature_df, angle_df, FoRD_df], axis=1, sort=False)
@@ -96,45 +99,33 @@ def feature_calc(df):
     return feature_df
 #
 #
-def feature_vector(df, videoID):
-    feature_space = {}
-    # Lokale Minima und Maxima identifizieren
-    df['Dx1_min'] = df.Dx1[(df.Dx1.shift(1) > df.Dx1) & (df.Dx1.shift(-1) > df.Dx1)]
-    df['Dx1_max'] = df.Dx1[(df.Dx1.shift(1) < df.Dx1) & (df.Dx1.shift(-1) < df.Dx1)]
-
-    past_frame = 0
-    cycle_times = []
-    for i,row in (df[df['Dx1_max']>0].iterrows()):
-        if past_frame > 0:
-            cycle_times.append(i - past_frame)
-        past_frame = i
-
-    # Cycle length in frames
-    cycle_length_frames = (sum(cycle_times)/len(cycle_times))
-    # Cycle length in seconds
-    cycle_length_seconds = cycle_length_frames / 30
-    # Cadence in [1/sec]
-    cadence = 1 / cycle_length_seconds
-
+def feature_vector(feature_df, df, videoID):
+    feature_space = {
+        'VideoID': videoID
+    }
+    cycle_time = get_cycle_time(df)
     round_to_togits = 3
 
-    feature_space.update(
-        {
-            'VideoID': videoID,
-            'Cycle Time': round(cycle_length_seconds, round_to_togits),
-            'Cadence': round(cadence, round_to_togits),
-            'LStep': round(abs(df['Dx1_max'].mean()), round_to_togits),
-            'RStep': round(abs(df['Dx1_min'].mean()), round_to_togits)
-        }
-    )
+    # Gangspezifische, medizinische Features berechnen
+    if GAIT_MED:
+        feature_space.update(
+            {
+                'Cycle Time': round(cycle_time, round_to_togits),
+                'Cadence': round(1/cycle_time, round_to_togits)
+            }
+        )
 
-    # df = df.drop(['Dx1_min', 'Dx1_max'])
+    # Features of Sway (FoS) based on Ganaria and Grangetto
+    if FOS:
+        feature_space.update(
+            FoS(df).to_dict() 
+        )
 
-    for column in df:
+    # Mean und STD Features berechnen
+    for column in feature_df:
         feature_space.update({
-            column + '_mean': df[column].mean(),
-            column + '_STD': df[column].std(),
-            column + '_mad': df[column].mad()
+            column + '_mean': feature_df[column].mean(),
+            column + '_STD': feature_df[column].std()
         })
 
     test = pd.DataFrame(feature_space, index=[VIDEO_TITLE])
