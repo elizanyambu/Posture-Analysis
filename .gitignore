@@ -110,4 +110,4 @@ python/caffe/proto/
 
 
 ######################### Result Files #########################
-result_data.csv
+*.csv
