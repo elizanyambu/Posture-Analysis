@@ -7,47 +7,11 @@ import glob
 #
 from cleansing import *
 from feature_extraction import *
+from settings import *
 
 VIDEO_TITLE = ''
 df = pd.DataFrame()
 feature_space = {}
-# Definition der zu berechnenden Körperteile ("Knochen")
-body_parts = {
-    "LThigh": ("LHip", "LKnee"),
-    "RThigh": ("RHip", "RKnee"),
-    "LLowerleg": ("LKnee", "LAnkle"),
-    "RLowerleg": ("RKnee", "RAnkle"),
-    "RFoot": ("RAnkle", "RBigToe"),
-    "LFoot": ("LAnkle", "LBigToe"),
-    "Spine": ("MidHip", "Neck"),
-    "LUpperArm": ("LShoulder", "LElbow"),
-    "RUpperArm": ("RShoulder", "RElbow"),
-    "LForearm": ("LElbow", "LWrist"),
-    "RForearm": ("RElbow", "RWrist"),
-    "NeckNose": ("Neck", "Nose")
-}
-# anthropometric features in Gianaria and Grangett0
-body_parts_g_and_g = {
-    "LArm": ['LShoulder', 'LElbow', 'LWrist'],
-    "RArm": ['RShoulder', 'RElbow', 'RWrist'],
-    "LLeg": ['LHip', 'LKnee', 'LAnkle'],
-    "RLeg": ['RHip', 'RKnee', 'RAnkle'],
-    "torso": ['Nose', 'Neck', 'MidHip']
-    # "height": []
-    # ....
-}
-
-angle_dict = {
-    'LKneeAngle': ['LThigh','LLowerleg'],
-    'RKneeAngle': ['RThigh','RLowerleg'],
-    'LFootAngle': ['LFoot','LLowerleg'],
-    'RFootAngle': ['RFoot','LLowerleg'],
-    'LElbowAngle': ['LUpperArm','LForearm'],
-    'RElbowAngle': ['RUpperArm','RForearm'],
-    'UpperBodyAngle': ['Spine', (0,1)],
-    'LUpperArmAngle': ['LUpperArm',(0,1)],
-    'RUpperArmAngle': ['RUpperArm',(0,1)],
-}
 
 path_to_training_data = r'training_data'
 
@@ -58,20 +22,20 @@ def main():
 
     for filename in all_files:
         print(filename + ' started')
-        try:
-            df = pd.read_csv(filename, header=[0,1])
-            df = cleansing1(df)
-            print('\t01 - Data cleansed')
-            # idx = pd.IndexSlice
-            # print(df.loc[:, idx[:, 'length']].std())
-            features = feature_calc(df)
-            print('\t02 - Features calculated')
-            vector = feature_vector(features, filename)
-            print('\t03 - Vector extracted')
-            li.append(vector)
-            print(filename + ' finished\n')
-        except: 
-            print('Error reading file: ' + filename)
+        # try:
+        df = pd.read_csv(filename, header=[0,1])
+        df = cleansing1(df)
+        print('\t01 - Data cleansed')
+        # idx = pd.IndexSlice
+        # print(df.loc[:, idx[:, 'length']].std())
+        features = feature_calc(df)
+        print('\t02 - Features calculated')
+        vector = feature_vector(features, filename)
+        print('\t03 - Vector extracted')
+        li.append(vector)
+        print(filename + ' finished\n')
+        # except: 
+        #     print('Error reading file: ' + filename)
 
     result = pd.concat(li, axis=0, ignore_index=True)
     result = result.drop(['Dx1_min_STD','Dx1_min_mean', 'Dx1_max_STD', 'Dx1_max_mean'], axis = 1)
