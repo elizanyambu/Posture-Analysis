@@ -13,6 +13,15 @@ from math import degrees
 #     # print(get_cycle_time(df))
 #     # print(get_avg_height(df))
 
+def get_fps(filename):
+    a = filename.split('_')
+    try:
+        fps = int(a[len(a)-2])
+    except:
+        fps = 30
+        print('FPS konnten dem Filename nicht entnommen werden und wurden auf 30 geschätzt.')
+    return fps
+
 def distance(jointA, jointB):
     result = np.array(np.linalg.norm(jointA.values - jointB.values, axis=1))
     print(result)

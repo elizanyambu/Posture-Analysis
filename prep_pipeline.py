@@ -107,7 +107,8 @@ def feature_vector(feature_df, df, videoID):
     feature_space = {
         'VideoID': videoID
     }
-    cycle_time = get_cycle_time(df)
+    fps = get_fps(videoID)
+    cycle_time = get_cycle_time(df=df, fps=fps)
     round_to_togits = 3
 
     # Gangspezifische, medizinische Features berechnen
