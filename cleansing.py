@@ -1,21 +1,8 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from settings import body_parts
 
-body_parts = {
-    "LThigh": ("LHip", "LKnee"),
-    "RThigh": ("RHip", "RKnee"),
-    "LLowerleg": ("LKnee", "LAnkle"),
-    "RLowerleg": ("RKnee", "RAnkle"),
-    "RFoot": ("RAnkle", "RBigToe"),
-    "LFoot": ("LAnkle", "LBigToe"),
-    "Spine": ("MidHip", "Neck"),
-    "LUpperArm": ("LShoulder", "LElbow"),
-    "RUpperArm": ("RShoulder", "RElbow"),
-    "LForearm": ("LElbow", "LWrist"),
-    "RForearm": ("RElbow", "RWrist"),
-    "NeckNose": ("Neck", "Nose")
-}
 
 # def main():
 #     df = pd.read_csv('training_data/gesund8_01_raw.csv', header=[0,1])
@@ -85,7 +72,7 @@ def smooth_data(df, rwindow=5):
         df[col] = df[col].rolling(window=rwindow).mean()
     return df 
 
-def scale_coordinates(df):
+def scale_coordinates(df, rel_part='Spine'):
     """ 
         Scales the coordinates relative to the mean spine length.
 
@@ -95,15 +82,15 @@ def scale_coordinates(df):
             pd.DataFrame: scaled df
     """
 
-    if not('Spine' in df.columns):
-        df = calc_body_parts(df, {'Spine': ('MidHip', 'Neck')})
+    if not(rel_part in df.columns):
+        temp_df = calc_body_parts(df, body_parts)
 
-    len_of_spine_mean = df['Spine', 'length'].mean()
+    len_of_rel_part_mean = temp_df[rel_part, 'length'].mean()
     for a,b in df.columns:
         if b != 'vector':
-            df[a,b] = df[a,b] / len_of_spine_mean
+            df[a,b] = df[a,b] / len_of_rel_part_mean
         else:
-            df[a,b] = df[a,b].apply(lambda x: (x[0]/len_of_spine_mean, x[1]/len_of_spine_mean))
+            df[a,b] = df[a,b].apply(lambda x: (x[0]/len_of_rel_part_mean, x[1]/len_of_rel_part_mean))
     return df
 
 def clean_by_joint_length(df, body_parts=body_parts):
