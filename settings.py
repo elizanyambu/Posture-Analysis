@@ -1,14 +1,24 @@
 
+# Parametrization
 FOS = True
 FORD = True
 YANG = True
 GAIT_MED = True
 ANGLES = True
 
+# Cleansing
+TRIM_DATASET = True
+FILL_EMTY_FRAMES = True
+SMOOTHEN_DATASET = True
+CLEAN_BY_JOINT_LENGTH = False
+SCALE_COORDINATES = True
+
+CALC_BODY_PARTS = False
+
 # Folder that contains all relevant _raw.csv files 
 path_to_training_data = r'training_data'
 # Outputfile
-output_file = 'result_data_All.csv'
+output_file = 'result_data.csv'
 
 # Definition der zu berechnenden Körperteile ("Knochen")
 body_parts = {
