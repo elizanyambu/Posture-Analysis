@@ -25,8 +25,6 @@ def main():
         df = pd.read_csv(filename, header=[0,1])
         df = cleansing1(df)
         print('\t01 - Data cleansed')
-        # idx = pd.IndexSlice
-        # print(df.loc[:, idx[:, 'length']].std())
         features = feature_calc(df)
         print('\t02 - Features calculated')
         vector = feature_vector(features, df, filename)
@@ -43,23 +41,31 @@ def main():
 #
 #
 def cleansing1(df):
-    df = trim_gait_dataset(df)
+    """# Detect start and end of gait --> Trim accordingly"""
+    if TRIM_DATASET:
+        df = trim_gait_dataset(df)
     
     """# Fehlende Daten in der Mitte interpolieren"""
-    df = trim_gait_dataset(df)
+    if FILL_EMTY_FRAMES:
+        df = fill_missing_values(df)
 
     """# Daten glätten"""
-    df = smooth_data(df)
+    if SMOOTHEN_DATASET:
+        df = smooth_data(df)
 
     # Für jedes oben definiertes Körperteil wird jetzt
     #    1. der Richtungsvektor und
     #    2. die länge ebendieses Vektors berechnet
-    df = calc_body_parts(df, body_parts)
+    if CALC_BODY_PARTS:
+        df = calc_body_parts(df, body_parts)
 
     """# Werte mit stark schwankenden Körperteillängen löschen (=np.NaN)"""
-    df = clean_by_joint_length(df, body_parts)    
+    if CLEAN_BY_JOINT_LENGTH:
+        df = clean_by_joint_length(df, body_parts)    
 
-    df = scale_coordinates(df)
+    """# Scale dataset relative to [spine]"""
+    if SCALE_COORDINATES:
+        df = scale_coordinates(df)
 
     return df
 #
