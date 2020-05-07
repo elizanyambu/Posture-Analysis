@@ -5,7 +5,7 @@ from settings import body_parts
 
 
 # def main():
-#     df = pd.read_csv('training_data/gesund8_01_raw.csv', header=[0,1])
+#     df = pd.read_csv('training_data/gesund7_01_raw.csv', header=[0,1])
     
 #     functions = [trim_gait_dataset, fill_missing_values, smooth_data]
 #     fig = plt.figure(figsize=(10,30))
@@ -29,6 +29,15 @@ from settings import body_parts
 
 #     df = clean_by_joint_length(df)
 #     # print(df)   
+
+#     print(get_walking_direction(df))
+
+def get_walking_direction(df):
+    if  df['LBigToe']['X'].mean() < df['LAnkle']['X'].mean():
+        result = 'right_to_left'
+    else:
+        result = 'left_to_right'
+    return result
 
 def trim_gait_dataset(df):
     joints_to_be_detected = ['RAnkle', 'LAnkle', 'LBigToe', 'RBigToe']
@@ -84,6 +93,8 @@ def scale_coordinates(df, rel_part='Spine'):
 
     if not(rel_part in df.columns):
         temp_df = calc_body_parts(df, body_parts)
+    else:
+        temp_df = df
 
     len_of_rel_part_mean = temp_df[rel_part, 'length'].mean()
     for a,b in df.columns:
