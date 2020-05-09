@@ -15,7 +15,6 @@ feature_space = {}
 
 
 def main():
-    print('This is main')
     all_files = glob.glob(path_to_training_data + "/*.csv")
     li = []
 
@@ -76,10 +75,10 @@ def feature_calc(df):
     if YANG:
         feature_df['Dx1'] = abs(df['LAnkle']['X']-df['RAnkle']['X'])
         feature_df['Dx2'] = abs(df['LElbow']['X']-df['RElbow']['X'])
-        feature_df['Dx3'] = abs(df['LWrist']['X']-df['RWrist']['X'])
+        # Dx3: LHand - RHand --> nicht in OpenPose abgebildet
         feature_df['Dx4'] = abs(df['Nose']['X']-((df['LAnkle']['X']+df['RAnkle']['X'])/2))
         feature_df['Dx5'] = abs(df['MidHip']['X']-((df['LAnkle']['X']+df['RAnkle']['X'])/2))
-
+        feature_df['Dx6'] = abs(df['LWrist']['X']-df['RWrist']['X'])
         feature_df['Dx7'] = abs(df['LShoulder']['X']-df['RShoulder']['X'])
 
         feature_df['Dy1'] = abs(df['Nose']['Y']-((df['LAnkle']['Y']+df['RAnkle']['Y'])/2))
@@ -89,8 +88,8 @@ def feature_calc(df):
     # Features of relative distance (FoRD) based on Ganaria and Grangetto 
     FoRD_df = pd.DataFrame()
     if FORD:
-        for body_part in body_parts_g_and_g:
-            FoRD_df[body_part] = FoRD(df, body_parts_g_and_g[body_part])
+        for body_part in FoRD_vectors_g_and_g:
+            FoRD_df[body_part] = FoRD(df, FoRD_vectors_g_and_g[body_part])
     
     # Winkelparameter berechnen
     angle_df = pd.DataFrame()
@@ -105,10 +104,11 @@ def feature_calc(df):
 #
 def feature_vector(feature_df, df, videoID):
     feature_space = {
-        'VideoID': videoID
+        'VideoID': videoID,
+        'Walking Direction': get_walking_direction(df)
     }
     fps = get_fps(videoID)
-    cycle_time = get_cycle_time(df=df, fps=fps)
+    cycle_time = get_cycle_time(df, fps)
     round_to_togits = 3
 
     # Gangspezifische, medizinische Features berechnen

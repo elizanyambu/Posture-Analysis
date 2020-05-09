@@ -36,7 +36,7 @@ body_parts = {
     "NeckNose": ("Neck", "Nose")
 }
 # anthropometric features in Gianaria and Grangett0
-body_parts_g_and_g = {
+FoRD_vectors_g_and_g = {
     # Body-fix features
     "LArm": ['LShoulder', 'LElbow', 'LWrist'], #FoRD1, FoRD9
     "RArm": ['RShoulder', 'RElbow', 'RWrist'], #FoRD2, FoRD12
@@ -54,10 +54,10 @@ body_parts_g_and_g = {
     "LCRShoulder": ["LShoulder", "Neck", "RShoulder"], #FoRD20
     "LCRHip": ["LHip", "MidHip", "RHip"], #FoRD21
     # Dynamic features:
-    "LRElbow": ["LElbow", "RElbow"], #FoRD22
-    "LRWrist": ["LWrist", "RWrist"], #FoRD23
+    "LRElbow": ["LElbow", "RElbow"], #FoRD22 --> Yang Dx2
+    "LRWrist": ["LWrist", "RWrist"], #FoRD23 --> Yang Dx6
     "LRKnee": ["LKnee", "RKnee"], #FoRD25
-    "LRAnkle": ["LAnkle", "RAnkle"], #FoRD26
+    "LRAnkle": ["LAnkle", "RAnkle"], #FoRD26 --> Yang Dx1
     "LRFoot": ["LBigToe", "RBigToe"] #FoRD27
 }
 
