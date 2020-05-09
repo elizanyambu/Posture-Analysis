@@ -20,7 +20,8 @@ from settings import body_parts
 #         ax.set_title(str(i))
 #         i+=1
 #     # plt.show()
-
+#     print(center_coordinates(df))
+    
 #     df = calc_body_parts(df)
 #     # print(df.head())
 
@@ -30,9 +31,17 @@ from settings import body_parts
 #     df = clean_by_joint_length(df)
 #     # print(df)   
 
-#     print(get_walking_direction(df))
+#     # print(get_walking_direction(df))
 
 def get_walking_direction(df):
+    """ 
+        Returns the walking direction of the input DataFrame
+
+        ### Parameter \n
+            df:     pd.DataFrame() containing the joint coordinates over time/frames
+        ### Returns \n
+            str: 'right_to_left' or 'left_to_right'
+    """
     if  df['LBigToe']['X'].mean() < df['LAnkle']['X'].mean():
         result = 'right_to_left'
     else:
@@ -102,6 +111,11 @@ def scale_coordinates(df, rel_part='Spine'):
             df[a,b] = df[a,b] / len_of_rel_part_mean
         else:
             df[a,b] = df[a,b].apply(lambda x: (x[0]/len_of_rel_part_mean, x[1]/len_of_rel_part_mean))
+    return df
+
+def center_coordinates(df, center_joint='MidHip'):
+    for column in df.columns:
+        df[column] = df[column] - df[center_joint, column[1]]
     return df
 
 def clean_by_joint_length(df, body_parts=body_parts):
