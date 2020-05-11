@@ -92,7 +92,10 @@ def trim_gait_dataset(df):
 
     # Originaldaten entsprechend einkürzen
     df = df.loc[min_index:max_index]
-    df.reset_index()
+    df = df.reset_index()
+    
+    # Nicht benötigte (da ungenau getrackte) 'Gelenke' löschen
+    df = df.drop(['LEar', 'REar', 'LEye', 'REye'], axis=1)
 
     return df
 
