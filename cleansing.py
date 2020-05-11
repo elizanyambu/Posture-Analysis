@@ -33,6 +33,22 @@ from settings import body_parts
 
 #     # print(get_walking_direction(df))
 
+def standard_cleansing(df):
+    df = trim_gait_dataset(df)
+
+    """# Fehlende Daten in der Mitte interpolieren"""
+    df = fill_missing_values(df)
+
+    """# Daten glätten"""
+    df = smooth_data(df)
+
+    df = center_coordinates(df)
+
+    """# Scale dataset relative to [spine]"""
+    df = scale_coordinates(df, 'LThigh')
+
+    return df
+
 def get_walking_direction(df):
     """ 
         Returns the walking direction of the input DataFrame
