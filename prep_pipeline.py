@@ -123,7 +123,7 @@ def feature_vector(feature_df, df, videoID):
     # Features of Sway (FoS) based on Ganaria and Grangetto
     if FOS:
         feature_space.update(
-            FoS(df).to_dict() 
+            FoS(df)
         )
 
     # Mean und STD Features berechnen

@@ -3,8 +3,11 @@ import numpy as np
 import math
 from math import degrees
 
+# from cleansing import standard_cleansing
+
 # def main():
-#     df = pd.read_csv('training_data/gesund_andersson_Person010_1_raw.csv', header=[0,1])
+#     df = pd.read_csv('training_data/gesund5_01_raw.csv', header=[0,1])
+#     df = standard_cleansing(df)
 #     #print(df)
 #     # print(distance(df['LAnkle'], df['RAnkle']))
 #     # print(FoRD(df, name='LLeg', joints=['LAnkle', 'LKnee', 'LHip']).mean())
@@ -12,6 +15,8 @@ from math import degrees
 #     # print(df['RKnee'].mad())
 #     # print(get_cycle_time(df))
 #     # print(get_avg_height(df))
+
+#     # print(FoS(df))
 
 def get_fps(filename):
     a = filename.split('_')
@@ -70,7 +75,10 @@ def FoRD(df, joints):
     return temp[len(temp.columns)-1]
 
 def FoS(df):
-    return df.mad()
+    idx = pd.IndexSlice
+    temp = df.loc[:, idx[:, ['X','Y']]]
+    temp.columns = ['FoS_'+a+'_'+b for a,b in temp.columns.to_flat_index()]
+    return temp.mad().to_dict()
 
 def get_angle_features(df, angledict):
     output_df = pd.DataFrame()
