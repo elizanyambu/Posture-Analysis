@@ -116,6 +116,7 @@ def feature_vector(feature_df, df, videoID):
         feature_space.update(
             {
                 'Cycle Time': round(cycle_time, round_to_togits),
+                'Step Length': round(get_stride_length(df), round_to_togits),
                 'Cadence': round(1/cycle_time, round_to_togits)
             }
         )

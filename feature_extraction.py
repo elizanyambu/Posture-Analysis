@@ -95,11 +95,46 @@ def get_angle_features(df, angledict):
     return output_df
 
 def get_stride_length(df):
-    # TODO
-    df['Dx1_min'] = df.Dx1[(df.Dx1.shift(1) > df.Dx1) & (df.Dx1.shift(-1) > df.Dx1)]
-    df['Dx1_max'] = df.Dx1[(df.Dx1.shift(1) < df.Dx1) & (df.Dx1.shift(-1) < df.Dx1)]
+    """ 
+        Calculates the mean Step Length of a given gait dataframe
 
-    return 0
+        ### Parameter \n
+            df:     pd.DataFrame() containing the joint coordinates over time/frames \n
+
+        ### Returns
+            float:  step length
+
+    """
+    try:
+        from scipy.signal import argrelextrema
+        scipy_installed = True
+    except: 
+        scipy_installed = False
+
+    # Berechnung des Abstandes zwischen L und RAnkle pro Frame
+    ## (Pot. redundand zum Yang Parameter Dx1)
+    df['temp_Dx1'] = df['LAnkle']['X']-df['RAnkle']['X']
+
+    if scipy_installed:
+        # Mit Scipy kann man hier kleinere (starke) Schwankungen 'überspringen',
+        # also nicht als Min oder Max ansehen
+        n=5 # number of points to be checked before and after 
+        # Find local peaks
+        df['Dx1_min'] = df.iloc[argrelextrema(df.temp_Dx1.values, np.less_equal, order=n)[0]]['temp_Dx1']
+        df['Dx1_max'] = df.iloc[argrelextrema(df.temp_Dx1.values, np.greater_equal, order=n)[0]]['temp_Dx1']
+    else:
+        # Funktioniert ohne Scipy, ist aber pot. fehleranfällig
+        df['Dx1_min'] = df.temp_Dx1[(df.temp_Dx1.shift(1) > df.temp_Dx1) & (df.temp_Dx1.shift(-1) > df.temp_Dx1)]
+        df['Dx1_max'] = df.temp_Dx1[(df.temp_Dx1.shift(1) < df.temp_Dx1) & (df.temp_Dx1.shift(-1) < df.temp_Dx1)]
+    
+    # Step length basierend auf Maxima
+    step_left = df['Dx1_max'].mean()
+    step_right = abs(df['Dx1_min'].mean())
+
+    # Aufräumen
+    df = df.drop(['Dx1_min', 'Dx1_max', 'temp_Dx1'], axis=1)
+
+    return (step_left+step_right)/2
 
 def get_cycle_time(df, fps = 30):
     """ 
