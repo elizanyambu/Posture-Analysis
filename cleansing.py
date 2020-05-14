@@ -5,27 +5,27 @@ from settings import body_parts
 
 
 # def main():
-#     df = pd.read_csv('training_data/gesund7_01_raw.csv', header=[0,1])
+#     df = pd.read_csv('training_data/JonasFrontalZurkamera_01_raw_at_30_fps.csv', header=[0,1])
     
-#     functions = [trim_gait_dataset, fill_missing_values, smooth_data]
+#     functions = [flip_y_axis,trim_gait_dataset, fill_missing_values, smooth_data,  center_coordinates, scale_coordinates]
+#     plt_joints = [('LKnee', 'Y'), ('RKnee', 'Y'), ('LAnkle', 'Y'), ('RAnkle', 'Y'), ('MidHip', 'Y'), ('Nose', 'Y')]
 #     fig = plt.figure(figsize=(10,30))
 #     ax = fig.add_subplot(len(functions)+1,1,1)
-#     ax.plot(df)
+#     ax.plot(df[plt_joints])
 #     ax.set_title('raw')
 #     i = 2
 #     for funct in functions:
 #         df = funct(df)
 #         ax = fig.add_subplot(len(functions)+1,1,i)
-#         ax.plot(df)
-#         ax.set_title(str(i))
+#         ax.plot(df[plt_joints])
+#         ax.set_title(funct.__name__)
+#         # ax.set_hspace(0.3)
 #         i+=1
-#     # plt.show()
-#     print(center_coordinates(df))
+#     plt.subplots_adjust(hspace=0.6)
+#     plt.show()
+#     # print(center_coordinates(df))
     
 #     df = calc_body_parts(df)
-#     # print(df.head())
-
-#     df = scale_coordinates(df)
 #     # print(df)
 
 #     df = clean_by_joint_length(df)
@@ -34,6 +34,8 @@ from settings import body_parts
 #     # print(get_walking_direction(df))
 
 def standard_cleansing(df):
+    df = flip_y_axis(df)
+
     df = trim_gait_dataset(df)
 
     """# Fehlende Daten in der Mitte interpolieren"""
@@ -91,8 +93,8 @@ def trim_gait_dataset(df):
     # print(min_index, max_index)
 
     # Originaldaten entsprechend einkürzen
-    df = df.loc[min_index:max_index]
-    df = df.reset_index()
+    df = df.iloc[min_index:max_index]
+    # df = df.reset_index()
     
     # Nicht benötigte (da ungenau getrackte) 'Gelenke' löschen
     df = df.drop(['LEar', 'REar', 'LEye', 'REye'], axis=1)
@@ -130,11 +132,26 @@ def scale_coordinates(df, rel_part='Spine'):
             df[a,b] = df[a,b] / len_of_rel_part_mean
         else:
             df[a,b] = df[a,b].apply(lambda x: (x[0]/len_of_rel_part_mean, x[1]/len_of_rel_part_mean))
-    return df
+    
+    
+    return df.loc[:,orig_columns]
 
 def center_coordinates(df, center_joint='MidHip'):
+    df_reference = df[[center_joint]]
     for column in df.columns:
-        df[column] = df[column] - df[center_joint, column[1]]
+        df[column] = df[column] - df_reference[center_joint, column[1]]
+    return df
+
+def flip_y_axis(df):
+    """
+        Dreht die Y-Achse um. Der Koordinatenursprung der OpenPose-Daten ist **oben** links im Bild.
+        Diese Funktion setzt den Ursprung nach **unten** Links. \n
+    """
+    try:
+        for joint in df.columns.levels[0]:
+            df[joint, 'Y'] = 1 - df[joint, 'Y']
+    except:
+        print('Y-Axis flip failed')
     return df
 
 def clean_by_joint_length(df, body_parts=body_parts):
