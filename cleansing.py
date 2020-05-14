@@ -6,7 +6,7 @@ from settings import body_parts
 
 # def main():
 #     df = pd.read_csv('training_data/JonasFrontalZurkamera_01_raw_at_30_fps.csv', header=[0,1])
-    
+
 #     functions = [flip_y_axis,trim_gait_dataset, fill_missing_values, smooth_data,  center_coordinates, scale_coordinates]
 #     plt_joints = [('LKnee', 'Y'), ('RKnee', 'Y'), ('LAnkle', 'Y'), ('RAnkle', 'Y'), ('MidHip', 'Y'), ('Nose', 'Y')]
 #     fig = plt.figure(figsize=(10,30))
@@ -29,7 +29,7 @@ from settings import body_parts
 #     # print(df)
 
 #     df = clean_by_joint_length(df)
-#     # print(df)   
+#     # print(df)
 
 #     # print(get_walking_direction(df))
 
@@ -58,12 +58,17 @@ def get_walking_direction(df):
         ### Parameter \n
             df:     pd.DataFrame() containing the joint coordinates over time/frames
         ### Returns \n
-            str: 'right_to_left' or 'left_to_right'
+            str: 'right_to_left' or 'left_to_right' or 'back_to_front' or 'front_to_back'
     """
-    if  df['LBigToe']['X'].mean() < df['LAnkle']['X'].mean():
-        result = 'right_to_left'
+    if df['LKnee']['X'].mean() < df['RKnee']['X'].mean():
+        result = 'front_to_back'
+    elif df['RKnee']['X'].mean() < df['LKnee']['X'].mean():
+        result = 'back_to_front'
     else:
-        result = 'left_to_right'
+        if  df['LBigToe']['X'].mean() < df['LAnkle']['X'].mean():
+            result = 'right_to_left'
+        else:
+            result = 'left_to_right'
     return result
 
 def trim_gait_dataset(df):
@@ -120,13 +125,20 @@ def scale_coordinates(df, rel_part='Spine'):
         ### Returns \n
             pd.DataFrame: scaled df
     """
+    orig_columns = df.columns
 
     if not(rel_part in df.columns):
         temp_df = calc_body_parts(df, body_parts)
     else:
         temp_df = df
-
-    len_of_rel_part_mean = temp_df[rel_part, 'length'].mean()
+    walking_dir = get_walking_direction(df)
+    if walking_dir == 'left_to_right' or walking_dir == 'right_to_left':
+        # Datensatz mit Durchschnitt skalieren
+        len_of_rel_part_mean = temp_df[rel_part, 'length'].mean()
+    elif walking_dir == 'front_to_back' or walking_dir == 'back_to_front':
+        # Datensatz pro frame skalieren
+        len_of_rel_part_mean = temp_df[rel_part, 'length'].rolling(window=5).mean()
+    
     for a,b in df.columns:
         if b != 'vector':
             df[a,b] = df[a,b] / len_of_rel_part_mean
