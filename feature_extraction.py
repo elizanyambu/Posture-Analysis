@@ -2,26 +2,45 @@ import pandas as pd
 import numpy as np
 import math
 from math import degrees
-
-# from cleansing import standard_cleansing
+from cleansing import calc_body_parts
 
 # def main():
-#     df = pd.read_csv('training_data/gesund5_01_raw.csv', header=[0,1])
+#     from cleansing import standard_cleansing, calc_body_parts
+#     df = pd.read_csv('training_data/JonasFrontalZurkamera_01_raw_at_30_fps.csv', header=[0,1])
 #     df = standard_cleansing(df)
-#     #print(df)
-#     # print(distance(df['LAnkle'], df['RAnkle']))
-#     # print(FoRD(df, name='LLeg', joints=['LAnkle', 'LKnee', 'LHip']).mean())
-#     # print(FoS(df['RKnee']))
-#     # print(df['RKnee'].mad())
-#     # print(get_cycle_time(df))
-#     # print(get_avg_height(df))
 
-#     # print(FoS(df))
+#     # print(distance(df['LAnkle'], df['RAnkle']))
+#     import matplotlib.pyplot as plt
+#     # feature_df = pd.DataFrame()
+#     # feature_df['Dx1'] = abs(df['LAnkle']['X']-df['RAnkle']['X'])
+#     # feature_df['Dx2'] = abs(df['LElbow']['X']-df['RElbow']['X'])
+#     # # Dx3: LHand - RHand --> nicht in OpenPose abgebildet
+#     # feature_df['Dx4'] = abs(df['Nose']['X']-((df['LAnkle']['X']+df['RAnkle']['X'])/2))
+#     # feature_df['Dx5'] = abs(df['MidHip']['X']-((df['LAnkle']['X']+df['RAnkle']['X'])/2))
+#     # feature_df['Dx6'] = abs(df['LWrist']['X']-df['RWrist']['X'])
+#     # feature_df['Dx7'] = abs(df['LShoulder']['X']-df['RShoulder']['X'])
+
+#     # feature_df['Dy1'] = abs(df['Nose']['Y']-((df['LAnkle']['Y']+df['RAnkle']['Y'])/2))
+#     # feature_df['Dy2'] = abs(df['Nose']['Y']-((df['LKnee']['Y']+df['RKnee']['Y'])/2))
+#     # feature_df['Dy3'] = abs(df['LAnkle']['Y']-df['RAnkle']['Y'])
+#     # plt.plot(feature_df)
+#     # plt.legend(feature_df.columns)
+#     # plt.show()
+
+#     from settings import angle_dict
+#     # df = calc_body_parts(df)
+#     angle_df = get_angle_features(df, angle_dict)
+#     plt.plot(angle_df)
+#     plt.legend(angle_df.columns)
+#     plt.show()
 
 def get_fps(filename):
     a = filename.split('_')
     try:
         fps = int(a[len(a)-2])
+        # <10 deutet auf einen Fehler hin
+        if fps < 10:
+            fps = 30
     except:
         fps = 30
         print('FPS konnten dem Filename nicht entnommen werden und wurden auf 30 geschätzt.')
@@ -82,16 +101,24 @@ def FoS(df):
 
 def get_angle_features(df, angledict):
     output_df = pd.DataFrame()
+    
+    df = calc_body_parts(df)
+    # Für jedes Gelenk (bzw. jeden vorher definierten Winkel) k
+    # wird jetzt der Winkel berechnet
     for k in angledict:
-        try: 
+        # try: 
+            # Wenn der zweite Parameter ein Vektor (0,1) oder (1,0) ist
             if isinstance(angledict[k][1], tuple):
                 output_df[k] = df.apply(lambda x: 180-angle(x[angledict[k][0], 'vector'],angledict[k][1]), axis=1)
+            # Wenn der erste Parameter ein Vektor (0,1) oder (1,0) ist
             elif isinstance(angledict[k][0], tuple):
                 output_df[k] = df.apply(lambda x: 180-angle(angledict[k][0],x[angledict[k][1]]), axis=1)
+            # Wenn beide Parameter ein Körperteil sind
             else:
                 output_df[k] = df.apply(lambda x: 180-angle(x[angledict[k][0], 'vector'],x[angledict[k][1], 'vector']), axis=1)
-        except:
-            output_df[k] = np.NaN
+        # except:
+        #     output_df[k] = np.NaN
+        #     print('Winkel ' + k + ' konnte nicht berechnet werden.')
     return output_df
 
 def get_stride_length(df):

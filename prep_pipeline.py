@@ -40,6 +40,8 @@ def main():
 #
 #
 def cleansing1(df):
+    df = flip_y_axis(df)
+
     """# Detect start and end of gait --> Trim accordingly"""
     if TRIM_DATASET:
         df = trim_gait_dataset(df)
@@ -51,12 +53,8 @@ def cleansing1(df):
     """# Daten glätten"""
     if SMOOTHEN_DATASET:
         df = smooth_data(df)
-
-    # Für jedes oben definiertes Körperteil wird jetzt
-    #    1. der Richtungsvektor und
-    #    2. die länge ebendieses Vektors berechnet
-    if CALC_BODY_PARTS:
-        df = calc_body_parts(df, body_parts)
+    
+    df = center_coordinates(df)
 
     """# Werte mit stark schwankenden Körperteillängen löschen (=np.NaN)"""
     if CLEAN_BY_JOINT_LENGTH:
@@ -107,12 +105,13 @@ def feature_vector(feature_df, df, videoID):
         'VideoID': videoID,
         'Walking Direction': get_walking_direction(df)
     }
-    fps = get_fps(videoID)
-    cycle_time = get_cycle_time(df, fps)
-    round_to_togits = 3
+
 
     # Gangspezifische, medizinische Features berechnen
     if GAIT_MED:
+        fps = get_fps(videoID)
+        cycle_time = get_cycle_time(df, fps)
+        round_to_togits = 3
         feature_space.update(
             {
                 'Cycle Time': round(cycle_time, round_to_togits),
