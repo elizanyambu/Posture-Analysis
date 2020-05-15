@@ -60,15 +60,23 @@ def get_walking_direction(df):
         ### Returns \n
             str: 'right_to_left' or 'left_to_right' or 'back_to_front' or 'front_to_back'
     """
-    if df['LKnee']['X'].mean() < df['RKnee']['X'].mean():
-        result = 'front_to_back'
-    elif df['RKnee']['X'].mean() < df['LKnee']['X'].mean():
+    lkneeleft = (df['LKnee']['X'] < df['RKnee']['X']).mean()
+    rkneeleft = (df['RKnee']['X'] < df['LKnee']['X']).mean()
+    
+    # Problem bei nachziehendem Bein: Dann ist das eine Knie natürlich auch
+    # in der Sagittalebene immer 'hinter' dem anderen. Eine Sagittalperspektive
+    # wird somit fälschlich als Frontalperspektive gekennzeichnet.
+    if lkneeleft > 0.8:
+        result = 'front_to_back' 
+    elif rkneeleft > 0.8:
         result = 'back_to_front'
     else:
+        # Sagittal
         if  df['LBigToe']['X'].mean() < df['LAnkle']['X'].mean():
             result = 'right_to_left'
         else:
             result = 'left_to_right'
+    print(result)
     return result
 
 def trim_gait_dataset(df):
