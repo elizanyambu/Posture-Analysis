@@ -62,6 +62,8 @@ def get_metadata(videoID):
         'notes': '_'.join(ls[5:])
     }
     return metadata
+
+def get_walking_direction(df, metadata):
     """ 
         Returns the walking direction of the input DataFrame
 
@@ -70,23 +72,36 @@ def get_metadata(videoID):
         ### Returns \n
             str: 'right_to_left' or 'left_to_right' or 'back_to_front' or 'front_to_back'
     """
-    lkneeleft = (df['LKnee']['X'] < df['RKnee']['X']).mean()
-    rkneeleft = (df['RKnee']['X'] < df['LKnee']['X']).mean()
-    
-    # Problem bei nachziehendem Bein: Dann ist das eine Knie natürlich auch
-    # in der Sagittalebene immer 'hinter' dem anderen. Eine Sagittalperspektive
-    # wird somit fälschlich als Frontalperspektive gekennzeichnet.
-    if lkneeleft > 0.8:
+    if isinstance(metadata, dict) and len(metadata)>3:
+        # Metadaten verfügbar
+        if metadata['perspective'] == 'side':
+            # Sagittal
+            if  df['LBigToe']['X'].mean() < df['LAnkle']['X'].mean():
+                result = 'right_to_left'
+            else:
+                result = 'left_to_right'
+        elif metadata['perspective'] == 'front':
+            # frontal
+            lkneeleft = (df['LKnee']['X'] < df['RKnee']['X']).mean()
+            rkneeleft = (df['RKnee']['X'] < df['LKnee']['X']).mean()
+            if lkneeleft > 0.8:
+                # "In mehr als 80% der Frames ist das linke Bein links vom rechten Bein"
+                result = 'front_to_back' 
         result = 'front_to_back' 
-    elif rkneeleft > 0.8:
-        result = 'back_to_front'
-    else:
-        # Sagittal
-        if  df['LBigToe']['X'].mean() < df['LAnkle']['X'].mean():
-            result = 'right_to_left'
+                result = 'front_to_back' 
+        result = 'front_to_back' 
+                result = 'front_to_back' 
+            elif rkneeleft > 0.8:
+                 # "In mehr als 80% der Frames ist das rechte Bein links vom linken Bein"
+                result = 'back_to_front'
         else:
-            result = 'left_to_right'
-    print(result)
+            # Perspektive nicht bekannt
+            print('Perspektive nicht aus Metadaten erkannt')
+            result = "unknown"
+    else:
+        # Metadaten nicht verfügbar
+        print('Metadaten wurden nicht korrekt an get_walking_direction() übergeben')
+        result = "unknown"
     return result
 
 def trim_gait_dataset(df):
@@ -134,7 +149,7 @@ def smooth_data(df, rwindow=5):
         df[col] = df[col].rolling(window=rwindow).mean()
     return df 
 
-def scale_coordinates(df, rel_part='Spine'):
+def scale_coordinates(df, walking_dir, rel_part='Spine'):
     """ 
         Scales the coordinates relative to the mean spine length.
 
@@ -149,7 +164,6 @@ def scale_coordinates(df, rel_part='Spine'):
         temp_df = calc_body_parts(df, body_parts)
     else:
         temp_df = df
-    walking_dir = get_walking_direction(df)
     if walking_dir == 'left_to_right' or walking_dir == 'right_to_left':
         # Datensatz mit Durchschnitt skalieren
         len_of_rel_part_mean = temp_df[rel_part, 'length'].mean()

@@ -9,7 +9,6 @@ from cleansing import *
 from feature_extraction import *
 from settings import *
 
-VIDEO_TITLE = ''
 df = pd.DataFrame()
 feature_space = {}
 
@@ -20,13 +19,14 @@ def main():
 
     for filename in all_files:
         print(filename + ' started')
+        metadata = get_metadata(filename.split('\\')[1])
         # try:
         df = pd.read_csv(filename, header=[0,1])
-        df = cleansing1(df)
+        df = cleansing1(df, metadata)
         print('\t01 - Data cleansed')
         features = feature_calc(df)
         print('\t02 - Features calculated')
-        vector = feature_vector(features, df, filename)
+        vector = feature_vector(features, df, metadata)
         print('\t03 - Vector extracted')
         li.append(vector)
         print(filename + ' finished\n')
@@ -34,7 +34,6 @@ def main():
         #     print('Error reading file: ' + filename)
 
     result = pd.concat(li, axis=0, ignore_index=True)
-    result['label'] = result.apply(lambda x: 'ungesund' if ('ungesund' in x['VideoID']) else 'gesund', axis=1)
     result.to_csv(output_file, index=False)
     print(result)
 #
@@ -62,7 +61,8 @@ def cleansing1(df, metadata):
 
     """# Scale dataset relative to [spine]"""
     if SCALE_COORDINATES:
-        df = scale_coordinates(df)
+        walking_dir = get_walking_direction(df, metadata)
+        df = scale_coordinates(df, walking_dir)
 
     return df
 #
@@ -102,6 +102,11 @@ def feature_calc(df):
 #
 def feature_vector(feature_df, df, metadata):
     feature_space = metadata
+    feature_space.update(
+        {
+            'Walking Direction': get_walking_direction(df, metadata)
+        }
+    )
 
 
     # Gangspezifische, medizinische Features berechnen
