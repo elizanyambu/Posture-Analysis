@@ -51,7 +51,17 @@ def standard_cleansing(df):
 
     return df
 
-def get_walking_direction(df):
+def get_metadata(videoID):
+    ls = videoID[:-4].split('_')
+    metadata = {
+        'label': ls[0],
+        'personID': ls[1],
+        'gaitNumber': ls[2],
+        'perspective': ls[3],
+        'fps': int(ls[4][3:]),
+        'notes': '_'.join(ls[5:])
+    }
+    return metadata
     """ 
         Returns the walking direction of the input DataFrame
 

@@ -39,7 +39,7 @@ def main():
     print(result)
 #
 #
-def cleansing1(df):
+def cleansing1(df, metadata):
     df = flip_y_axis(df)
 
     """# Detect start and end of gait --> Trim accordingly"""
@@ -100,17 +100,13 @@ def feature_calc(df):
     return feature_df
 #
 #
-def feature_vector(feature_df, df, videoID):
-    feature_space = {
-        'VideoID': videoID,
-        'Walking Direction': get_walking_direction(df)
-    }
+def feature_vector(feature_df, df, metadata):
+    feature_space = metadata
 
 
     # Gangspezifische, medizinische Features berechnen
     if GAIT_MED:
-        fps = get_fps(videoID)
-        cycle_time = get_cycle_time(df, fps)
+        cycle_time = get_cycle_time(df, metadata['fps'])
         round_to_togits = 3
         feature_space.update(
             {
@@ -133,9 +129,9 @@ def feature_vector(feature_df, df, videoID):
             column + '_STD': feature_df[column].std()
         })
 
-    test = pd.DataFrame(feature_space, index=[VIDEO_TITLE])
+    result = pd.DataFrame(feature_space, index=[metadata['personID']+'_' +metadata['gaitNumber']])
 
-    return test
+    return result
 #
 #
 main()
