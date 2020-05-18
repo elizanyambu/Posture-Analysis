@@ -87,12 +87,8 @@ def get_walking_direction(df, metadata):
             if lkneeleft > 0.8:
                 # "In mehr als 80% der Frames ist das linke Bein links vom rechten Bein"
                 result = 'front_to_back' 
-        result = 'front_to_back' 
-                result = 'front_to_back' 
-        result = 'front_to_back' 
-                result = 'front_to_back' 
             elif rkneeleft > 0.8:
-                 # "In mehr als 80% der Frames ist das rechte Bein links vom linken Bein"
+                # "In mehr als 80% der Frames ist das rechte Bein links vom linken Bein"
                 result = 'back_to_front'
         else:
             # Perspektive nicht bekannt
