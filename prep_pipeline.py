@@ -15,10 +15,12 @@ feature_space = {}
 
 def main():
     all_files = glob.glob(path_to_training_data + "/*.csv")
+    filenum = str(len(all_files))
+    print('Found ' + filenum + ' files.')
     li = []
 
     for filename in all_files:
-        print(filename + ' started')
+        print(str(len(li)+1) + ' of ' + filenum,filename + ' started')
         metadata = get_metadata(filename.split('\\')[1])
         # try:
         df = pd.read_csv(filename, header=[0,1])

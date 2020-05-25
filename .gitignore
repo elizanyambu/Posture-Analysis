@@ -109,5 +109,10 @@ python/caffe/proto/
 *.mov
 
 
+######################### Training Files #########################
+training_data/*csv
+training_data_scale/*csv
+training_data_cs1/*csv
+
 ######################### Result Files #########################
 *.csv

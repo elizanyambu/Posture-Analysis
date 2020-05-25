@@ -168,6 +168,9 @@ def scale_coordinates(df, walking_dir, rel_part='Spine'):
     elif walking_dir == 'front_to_back' or walking_dir == 'back_to_front':
         # Datensatz pro frame skalieren
         len_of_rel_part_mean = temp_df[rel_part, 'length'].rolling(window=5).mean()
+    else:
+        print('Walking direction \'' + walking_dir + '\' nicht erkannt. Koordinaten nicht skaliert.')
+        len_of_rel_part_mean = 1
     
     for a,b in df.columns:
         if b != 'vector':
