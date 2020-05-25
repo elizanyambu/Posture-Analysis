@@ -33,7 +33,7 @@ from settings import body_parts
 
 #     # print(get_walking_direction(df))
 
-def standard_cleansing(df):
+def standard_cleansing(df, videoID):
     df = flip_y_axis(df)
 
     df = trim_gait_dataset(df)
@@ -47,7 +47,9 @@ def standard_cleansing(df):
     df = center_coordinates(df)
 
     """# Scale dataset relative to [spine]"""
-    df = scale_coordinates(df, 'LThigh')
+    metadata = get_metadata(videoID)
+    walking_dir = get_walking_direction(df, metadata)
+    df = scale_coordinates(df,walking_dir, 'Spine')
 
     return df
 
