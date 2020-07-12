@@ -110,9 +110,9 @@ python/caffe/proto/
 
 
 ######################### Training Files #########################
-training_data/*csv
-training_data_scale/*csv
-training_data_cs1/*csv
+training_data/*
+training_data_scale/*
+training_data_cs1/*
 
 ######################### Result Files #########################
 *.csv
