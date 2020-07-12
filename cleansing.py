@@ -5,10 +5,11 @@ from settings import body_parts
 
 
 # def main():
-#     df = pd.read_csv('training_data/JonasFrontalZurkamera_01_raw_at_30_fps.csv', header=[0,1])
+#     df = pd.read_csv('training_data/gesund_Jonas_02_side_fps30_raw_Jeans_LtR.csv', header=[0,1])
 
 #     functions = [flip_y_axis,trim_gait_dataset, fill_missing_values, smooth_data,  center_coordinates, scale_coordinates]
-#     plt_joints = [('LKnee', 'Y'), ('RKnee', 'Y'), ('LAnkle', 'Y'), ('RAnkle', 'Y'), ('MidHip', 'Y'), ('Nose', 'Y')]
+#     # plt_joints = [('LKnee', 'Y'), ('RKnee', 'Y'), ('LAnkle', 'Y'), ('RAnkle', 'Y'), ('MidHip', 'Y'), ('Nose', 'Y')]
+#     plt_joints = [('LElbow', 'Y'), ('RElbow', 'Y')]
 #     fig = plt.figure(figsize=(10,30))
 #     ax = fig.add_subplot(len(functions)+1,1,1)
 #     ax.plot(df[plt_joints])
@@ -25,10 +26,10 @@ from settings import body_parts
 #     plt.show()
 #     # print(center_coordinates(df))
     
-#     df = calc_body_parts(df)
+#     # df = calc_body_parts(df)
 #     # print(df)
 
-#     df = clean_by_joint_length(df)
+#     # df = clean_by_joint_length(df)
 #     # print(df)
 
 #     # print(get_walking_direction(df))
@@ -74,6 +75,7 @@ def get_walking_direction(df, metadata):
         ### Returns \n
             str: 'right_to_left' or 'left_to_right' or 'back_to_front' or 'front_to_back'
     """
+    result = "unknown"
     if isinstance(metadata, dict) and len(metadata)>3:
         # Metadaten verfügbar
         if metadata['perspective'] == 'side':
@@ -95,11 +97,9 @@ def get_walking_direction(df, metadata):
         else:
             # Perspektive nicht bekannt
             print('Perspektive nicht aus Metadaten erkannt')
-            result = "unknown"
     else:
         # Metadaten nicht verfügbar
         print('Metadaten wurden nicht korrekt an get_walking_direction() übergeben')
-        result = "unknown"
     return result
 
 def trim_gait_dataset(df):
@@ -147,7 +147,7 @@ def smooth_data(df, rwindow=5):
         df[col] = df[col].rolling(window=rwindow).mean()
     return df 
 
-def scale_coordinates(df, walking_dir, rel_part='Spine'):
+def scale_coordinates(df, walking_dir="left_to_right", rel_part='Spine'):
     """ 
         Scales the coordinates relative to the mean spine length.
 
