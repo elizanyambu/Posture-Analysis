@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from settings import body_parts
+from settings import body_parts, CLEAN_BY_JOINT_LENGTH, SCALE_COORDINATES
 
 
 # def main():

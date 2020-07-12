@@ -1,9 +1,9 @@
 
 # Parametrization
-FOS = True
-FORD = True
-YANG = True
-GAIT_MED = True
+FOS = False
+FORD = False
+YANG = False
+GAIT_MED = False
 ANGLES = True
 
 # Cleansing
@@ -11,12 +11,12 @@ TRIM_DATASET = True
 FILL_EMTY_FRAMES = True
 SMOOTHEN_DATASET = True
 CLEAN_BY_JOINT_LENGTH = False
-SCALE_COORDINATES = True
-
-CALC_BODY_PARTS = False
+CENTER_COORDINATES = True
+SCALE_COORDINATES = False #!!
+CALC_BODY_PARTS = True
 
 # Folder that contains all relevant _raw.csv files 
-path_to_training_data = r'training_data'
+path_to_training_data = r'training_data_front'
 # Outputfile
 output_file = 'result_data.csv'
 
@@ -33,7 +33,9 @@ body_parts = {
     "RUpperArm": ("RShoulder", "RElbow"),
     "LForearm": ("LElbow", "LWrist"),
     "RForearm": ("RElbow", "RWrist"),
-    "NeckNose": ("Neck", "Nose")
+    "NeckNose": ("Neck", "Nose"),
+    "Hip": ("LHip", "RHip"), 
+    "HipL": ("RHip", "LHip") # Für linken Winkel zwischen Hüfte und Oberschenkel
 }
 # anthropometric features in Gianaria and Grangett0
 FoRD_vectors_g_and_g = {
@@ -63,12 +65,17 @@ FoRD_vectors_g_and_g = {
 
 angle_dict = {
     'LKneeAngle': ['LThigh','LLowerleg'],
-    'RKneeAngle': ['RThigh','RLowerleg'],
+    'RKneeAngle': ['RLowerleg','RThigh'],
     'LFootAngle': ['LFoot','LLowerleg'],
-    'RFootAngle': ['RFoot','LLowerleg'],
+    'RFootAngle': ['LLowerleg','RFoot'],
     'LElbowAngle': ['LUpperArm','LForearm'],
-    'RElbowAngle': ['RUpperArm','RForearm'],
+    'RElbowAngle': ['RForearm','RUpperArm'],
     'UpperBodyAngle': ['Spine', (0,1)],
     'LUpperArmAngle': ['LUpperArm',(0,1)],
-    'RUpperArmAngle': ['RUpperArm',(0,1)],
+    'RUpperArmAngle': [(0,1),'RUpperArm'],
+    'HipToVerticalAngle': ['Hip',(0,1)],
+    'HipToHorizontalAngle': ['Hip',(1,0)],
+    'HipSpineAngle': ['HipL', 'Spine'],
+    'LThighHipAngle': ['LThigh', 'HipL'],
+    'RThighHipAngle': ['Hip', 'RThigh'],
 }

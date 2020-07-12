@@ -1,38 +1,42 @@
 import pandas as pd
 import numpy as np
 import math
-from math import degrees
 from cleansing import calc_body_parts
 
 # def main():
 #     from cleansing import standard_cleansing, calc_body_parts
-#     df = pd.read_csv('training_data/JonasFrontalZurkamera_01_raw_at_30_fps.csv', header=[0,1])
-#     df = standard_cleansing(df)
-
-#     # print(distance(df['LAnkle'], df['RAnkle']))
 #     import matplotlib.pyplot as plt
-#     # feature_df = pd.DataFrame()
-#     # feature_df['Dx1'] = abs(df['LAnkle']['X']-df['RAnkle']['X'])
-#     # feature_df['Dx2'] = abs(df['LElbow']['X']-df['RElbow']['X'])
-#     # # Dx3: LHand - RHand --> nicht in OpenPose abgebildet
-#     # feature_df['Dx4'] = abs(df['Nose']['X']-((df['LAnkle']['X']+df['RAnkle']['X'])/2))
-#     # feature_df['Dx5'] = abs(df['MidHip']['X']-((df['LAnkle']['X']+df['RAnkle']['X'])/2))
-#     # feature_df['Dx6'] = abs(df['LWrist']['X']-df['RWrist']['X'])
-#     # feature_df['Dx7'] = abs(df['LShoulder']['X']-df['RShoulder']['X'])
-
-#     # feature_df['Dy1'] = abs(df['Nose']['Y']-((df['LAnkle']['Y']+df['RAnkle']['Y'])/2))
-#     # feature_df['Dy2'] = abs(df['Nose']['Y']-((df['LKnee']['Y']+df['RKnee']['Y'])/2))
-#     # feature_df['Dy3'] = abs(df['LAnkle']['Y']-df['RAnkle']['Y'])
-#     # plt.plot(feature_df)
-#     # plt.legend(feature_df.columns)
-#     # plt.show()
-
+#     df = pd.read_csv('training_data/gesund_Jonas_02_side_fps30_raw_Jeans_LtR.csv', header=[0,1])
+#     df = standard_cleansing(df, 'gesund_Jonas_02_side_fps30_raw_Jeans_LtR.csv')
+    
 #     from settings import angle_dict
 #     # df = calc_body_parts(df)
 #     angle_df = get_angle_features(df, angle_dict)
+#     print(angle_df[angle_df.LElbowAngle<150].LElbowAngle)
+#     for col in angle_df.columns:
+#         angle_df[col] = angle_df[col].rolling(window=8).mean()
 #     plt.plot(angle_df)
 #     plt.legend(angle_df.columns)
 #     plt.show()
+# #     # print(distance(df['LAnkle'], df['RAnkle']))
+# #     
+# #     # feature_df = pd.DataFrame()
+# #     # feature_df['Dx1'] = abs(df['LAnkle']['X']-df['RAnkle']['X'])
+# #     # feature_df['Dx2'] = abs(df['LElbow']['X']-df['RElbow']['X'])
+# #     # # Dx3: LHand - RHand --> nicht in OpenPose abgebildet
+# #     # feature_df['Dx4'] = abs(df['Nose']['X']-((df['LAnkle']['X']+df['RAnkle']['X'])/2))
+# #     # feature_df['Dx5'] = abs(df['MidHip']['X']-((df['LAnkle']['X']+df['RAnkle']['X'])/2))
+# #     # feature_df['Dx6'] = abs(df['LWrist']['X']-df['RWrist']['X'])
+# #     # feature_df['Dx7'] = abs(df['LShoulder']['X']-df['RShoulder']['X'])
+
+# #     # feature_df['Dy1'] = abs(df['Nose']['Y']-((df['LAnkle']['Y']+df['RAnkle']['Y'])/2))
+# #     # feature_df['Dy2'] = abs(df['Nose']['Y']-((df['LKnee']['Y']+df['RKnee']['Y'])/2))
+# #     # feature_df['Dy3'] = abs(df['LAnkle']['Y']-df['RAnkle']['Y'])
+# #     # plt.plot(feature_df)
+# #     # plt.legend(feature_df.columns)
+# #     # plt.show()
+
+    
 
 def get_fps(filename):
     a = filename.split('_')

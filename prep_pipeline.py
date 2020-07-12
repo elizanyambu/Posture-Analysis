@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import math
 from math import degrees
 import glob
+import time
 #
 from cleansing import *
 from feature_extraction import *
@@ -18,6 +19,7 @@ def main():
     filenum = str(len(all_files))
     print('Found ' + filenum + ' files.')
     li = []
+    count = 0
 
     for filename in all_files:
         print(str(len(li)+1) + ' of ' + filenum,filename + ' started')
@@ -32,6 +34,11 @@ def main():
         print('\t03 - Vector extracted')
         li.append(vector)
         print(filename + ' finished\n')
+        if count % 5 == 0:
+            result = pd.concat(li, axis=0, ignore_index=True)
+            result.to_csv(output_file, index=False)
+            print("Temp file saved.")
+        count +=1
         # except: 
         #     print('Error reading file: ' + filename)
 
@@ -55,7 +62,13 @@ def cleansing1(df, metadata):
     if SMOOTHEN_DATASET:
         df = smooth_data(df)
     
-    df = center_coordinates(df)
+    if CENTER_COORDINATES:
+        df = center_coordinates(df)
+
+    if CALC_BODY_PARTS:
+        start = time.process_time()
+        df = calc_body_parts(df)
+        # print('\t\tCalc_body_parts:' ,time.process_time() - start)
 
     """# Werte mit stark schwankenden Körperteillängen löschen (=np.NaN)"""
     if CLEAN_BY_JOINT_LENGTH:
