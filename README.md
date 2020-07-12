@@ -1,7 +1,4 @@
-# Gemeinsames Repository zur Entwicklungsarbeit im Projektstudium
-
-## Verwendung von Git
-Vorschlag: Jeder hat eine User-Branch, die dann regelmäßig mit dem Master gemerged werden.
+# Jonas' Repository zur Entwicklungsarbeit im Projektstudium
 
 # Aktuelle Architektur
 
@@ -15,6 +12,7 @@ Die Ergebnisse aus Schritt 1 werden daraufhin in den Ordner [training_data/](tra
 Die Ergebnisse aus Schritt 2 können nun durch die Anwendung verschiednener ML Algorithmen ausgewertet werden. 
 
 Beispiele:
+*  Übersicht über den Datensatz: [JN Colab: Validations.ipynb](https://colab.research.google.com/drive/1LM_vi8g-cP6D2fWI8RFOkBGhkTtl1-y6?usp=sharing)
 *  SVM: [JN Colab: ML_SVM.ipynb](https://colab.research.google.com/drive/19jsMg7c5btJMSn4qFYl0lL-MwhaWhCn1)
 *  Decision Tree: [JN Colab: ML_DecisionTree.ipynb](https://colab.research.google.com/drive/14-I_LvbrwUWaznhii_3X3YbqRezZAySC#scrollTo=7-O5r3wDthi3)
 
