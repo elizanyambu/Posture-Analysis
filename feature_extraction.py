@@ -1,17 +1,54 @@
 import pandas as pd
 import numpy as np
 import math
-from math import degrees
+from cleansing import calc_body_parts
 
 # def main():
-#     df = pd.read_csv('training_data/gesund_andersson_Person010_1_raw.csv', header=[0,1])
-#     #print(df)
-#     # print(distance(df['LAnkle'], df['RAnkle']))
-#     # print(FoRD(df, name='LLeg', joints=['LAnkle', 'LKnee', 'LHip']).mean())
-#     # print(FoS(df['RKnee']))
-#     # print(df['RKnee'].mad())
-#     # print(get_cycle_time(df))
-#     # print(get_avg_height(df))
+#     from cleansing import standard_cleansing, calc_body_parts
+#     import matplotlib.pyplot as plt
+#     df = pd.read_csv('training_data/gesund_Jonas_02_side_fps30_raw_Jeans_LtR.csv', header=[0,1])
+#     df = standard_cleansing(df, 'gesund_Jonas_02_side_fps30_raw_Jeans_LtR.csv')
+    
+#     from settings import angle_dict
+#     # df = calc_body_parts(df)
+#     angle_df = get_angle_features(df, angle_dict)
+#     print(angle_df[angle_df.LElbowAngle<150].LElbowAngle)
+#     for col in angle_df.columns:
+#         angle_df[col] = angle_df[col].rolling(window=8).mean()
+#     plt.plot(angle_df)
+#     plt.legend(angle_df.columns)
+#     plt.show()
+# #     # print(distance(df['LAnkle'], df['RAnkle']))
+# #     
+# #     # feature_df = pd.DataFrame()
+# #     # feature_df['Dx1'] = abs(df['LAnkle']['X']-df['RAnkle']['X'])
+# #     # feature_df['Dx2'] = abs(df['LElbow']['X']-df['RElbow']['X'])
+# #     # # Dx3: LHand - RHand --> nicht in OpenPose abgebildet
+# #     # feature_df['Dx4'] = abs(df['Nose']['X']-((df['LAnkle']['X']+df['RAnkle']['X'])/2))
+# #     # feature_df['Dx5'] = abs(df['MidHip']['X']-((df['LAnkle']['X']+df['RAnkle']['X'])/2))
+# #     # feature_df['Dx6'] = abs(df['LWrist']['X']-df['RWrist']['X'])
+# #     # feature_df['Dx7'] = abs(df['LShoulder']['X']-df['RShoulder']['X'])
+
+# #     # feature_df['Dy1'] = abs(df['Nose']['Y']-((df['LAnkle']['Y']+df['RAnkle']['Y'])/2))
+# #     # feature_df['Dy2'] = abs(df['Nose']['Y']-((df['LKnee']['Y']+df['RKnee']['Y'])/2))
+# #     # feature_df['Dy3'] = abs(df['LAnkle']['Y']-df['RAnkle']['Y'])
+# #     # plt.plot(feature_df)
+# #     # plt.legend(feature_df.columns)
+# #     # plt.show()
+
+    
+
+def get_fps(filename):
+    a = filename.split('_')
+    try:
+        fps = int(a[len(a)-2])
+        # <10 deutet auf einen Fehler hin
+        if fps < 10:
+            fps = 30
+    except:
+        fps = 30
+        print('FPS konnten dem Filename nicht entnommen werden und wurden auf 30 geschätzt.')
+    return fps
 
 def distance(jointA, jointB):
     result = np.array(np.linalg.norm(jointA.values - jointB.values, axis=1))
@@ -22,12 +59,21 @@ def dotproduct(v1, v2):
     return sum((a*b) for a, b in zip(v1, v2))
 
 def length(v):
-    return math.sqrt(dotproduct(v, v))
+    """Returns Euclidean length of a given vector."""
+    return (dotproduct(v, v))**(1/len(v))
 
 def angle(v1, v2):
-    if isinstance(v1, tuple) and isinstance(v2, tuple):
+    """Returns angle in degrees between to input *NORMALIZED* (lenght=1) vectors"""
+    if True: #isinstance(v1, tuple) and isinstance(v2, tuple):
         try:
-            result = degrees(math.acos(dotproduct(v1, v2) / (length(v1) * length(v2))))
+            # Da Input zwei nicht normalisierte Vektoroen, hier die allgemeine Funktion 
+            # zur Berechnung des Winkels zwischen diesen beiden Vektoren
+            result = math.degrees(math.acos(dotproduct(v1, v2) / (length(v1) * length(v2))))
+            
+            ## Alternative Berechnung mit numpy. Rechenzeit steigt!
+            # v1 = v1 / np.linalg.norm(v1)
+            # v2 = v2 / np.linalg.norm(v2)
+            # result = math.degrees(math.acos(dotproduct(v1, v2)))
         except:
             result = np.NaN
     else:
@@ -58,40 +104,93 @@ def FoRD(df, joints):
         # letzte Spalte (i+1) ist immer Summe der vorigen
         if i>0:
             temp[i+1] = temp[i] + temp[i-1] 
-    return temp[len(joints)-1]
+    return temp[len(temp.columns)-1]
 
 def FoS(df):
-    return df.mad()
+    idx = pd.IndexSlice
+    temp = df.loc[:, idx[:, ['X','Y']]]
+    temp.columns = ['FoS_'+a+'_'+b for a,b in temp.columns.to_flat_index()]
+    return temp.mad().to_dict()
 
 def get_angle_features(df, angledict):
     output_df = pd.DataFrame()
+    
+    # Für jedes Gelenk (bzw. jeden vorher definierten Winkel) k
+    # wird jetzt der Winkel berechnet
     for k in angledict:
-        try: 
+        # try: 
+            # Wenn der zweite Parameter ein Vektor (0,1) oder (1,0) ist
             if isinstance(angledict[k][1], tuple):
-                output_df[k] = df.apply(lambda x: 180-angle(x[angledict[k][0], 'vector'],angledict[k][1]), axis=1)
+                output_df[k] = df.apply(
+                    lambda x: 
+                        angle(
+                            x[angledict[k][0], 'vector'],
+                            angledict[k][1]
+                        ), 
+                    axis=1
+                )
+            # Wenn der erste Parameter ein Vektor (0,1) oder (1,0) ist
             elif isinstance(angledict[k][0], tuple):
-                output_df[k] = df.apply(lambda x: 180-angle(angledict[k][0],x[angledict[k][1]]), axis=1)
+                output_df[k] = df.apply(lambda x: angle(angledict[k][0],x[angledict[k][1], 'vector']), axis=1)
+            # Wenn beide Parameter ein Körperteil sind
             else:
-                output_df[k] = df.apply(lambda x: 180-angle(x[angledict[k][0], 'vector'],x[angledict[k][1], 'vector']), axis=1)
-        except:
-            output_df[k] = np.NaN
+                output_df[k] = df.apply(lambda x: angle(x[angledict[k][0], 'vector'],x[angledict[k][1], 'vector']), axis=1)
+        # except:
+        #     output_df[k] = np.NaN
+        #     print('Winkel ' + k + ' konnte nicht berechnet werden.')
     return output_df
 
 def get_stride_length(df):
-    df['Dx1_min'] = df.Dx1[(df.Dx1.shift(1) > df.Dx1) & (df.Dx1.shift(-1) > df.Dx1)]
-    df['Dx1_max'] = df.Dx1[(df.Dx1.shift(1) < df.Dx1) & (df.Dx1.shift(-1) < df.Dx1)]
+    """ 
+        Calculates the mean Step Length of a given gait dataframe
 
-    return 
+        ### Parameter \n
+            df:     pd.DataFrame() containing the joint coordinates over time/frames \n
+
+        ### Returns
+            float:  step length
+
+    """
+    try:
+        from scipy.signal import argrelextrema
+        scipy_installed = True
+    except: 
+        scipy_installed = False
+
+    # Berechnung des Abstandes zwischen L und RAnkle pro Frame
+    ## (Pot. redundand zum Yang Parameter Dx1)
+    df['temp_Dx1'] = df['LAnkle']['X']-df['RAnkle']['X']
+
+    if scipy_installed:
+        # Mit Scipy kann man hier kleinere (starke) Schwankungen 'überspringen',
+        # also nicht als Min oder Max ansehen
+        n=5 # number of points to be checked before and after 
+        # Find local peaks
+        df['Dx1_min'] = df.iloc[argrelextrema(df.temp_Dx1.values, np.less_equal, order=n)[0]]['temp_Dx1']
+        df['Dx1_max'] = df.iloc[argrelextrema(df.temp_Dx1.values, np.greater_equal, order=n)[0]]['temp_Dx1']
+    else:
+        # Funktioniert ohne Scipy, ist aber pot. fehleranfällig
+        df['Dx1_min'] = df.temp_Dx1[(df.temp_Dx1.shift(1) > df.temp_Dx1) & (df.temp_Dx1.shift(-1) > df.temp_Dx1)]
+        df['Dx1_max'] = df.temp_Dx1[(df.temp_Dx1.shift(1) < df.temp_Dx1) & (df.temp_Dx1.shift(-1) < df.temp_Dx1)]
+    
+    # Step length basierend auf Maxima
+    step_left = df['Dx1_max'].mean()
+    step_right = abs(df['Dx1_min'].mean())
+
+    # Aufräumen
+    df = df.drop(['Dx1_min', 'Dx1_max', 'temp_Dx1'], axis=1)
+
+    return (step_left+step_right)/2
 
 def get_cycle_time(df, fps = 30):
     """ 
         Calculates the Cycle Time of a given gait
 
-        Parameter 
-            df:     pd.DataFrame() containing the joint coordinates over time/frames
+        ### Parameter \n
+            df:     pd.DataFrame() containing the joint coordinates over time/frames \n
             [fps]:  Frames per second of the source gait video
 
-        Returns
+        ### Returns
             float:  cycle time in seconds
 
     """
@@ -131,6 +230,9 @@ def get_cycle_time(df, fps = 30):
         if past_frame > 0:
             cycle_times.append(i - past_frame)
         past_frame = i
+
+    # Aufräumen
+    df = df.drop(['Dx1_min', 'Dx1_max', 'temp_Dx1'], axis=1)
 
     # Cycle length in frames
     cycle_length_frames = (sum(cycle_times)/len(cycle_times))
