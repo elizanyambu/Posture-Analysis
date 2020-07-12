@@ -94,7 +94,9 @@ def feature_calc(df):
     # Winkelparameter berechnen
     angle_df = pd.DataFrame()
     if ANGLES:
+        start = time.process_time()
         angle_df = get_angle_features(df, angle_dict)
+        # print('\t\tAngle_calc:' ,time.process_time() - start)
 
     # Ergebnis-dfs zusammenführen
     feature_df = pd.concat([feature_df, angle_df, FoRD_df], axis=1, sort=False)

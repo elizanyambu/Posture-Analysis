@@ -237,12 +237,14 @@ def calc_body_parts(df, body_parts=body_parts):
     """
     for part in body_parts:
         p1, p2 = body_parts[part]
-        x = df[p1]['X'] - df[p2]['X']
-        y = df[p1]['Y'] - df[p2]['Y']
+        
         # Richtungsvektor als Tuple darstellen
-        df[part, 'vector'] = list(zip(x, y))
-        # Für jede Zeile (deswegen axis=1 !!!) die Länge des Richtungsvektors bestimmen
-        df[part, 'length'] = df.apply(lambda row: np.linalg.norm(row[part]['vector']), axis=1)
+        df[part, 'vector'] = list(zip(df[p1]['X'] - df[p2]['X'], df[p1]['Y'] - df[p2]['Y']))
+       
+        # Längenberechnung potentiell rechenintensiv --> Nur durchführen, wenn wirklich nötig
+        if CLEAN_BY_JOINT_LENGTH or SCALE_COORDINATES:
+            # Für jede Zeile (deswegen axis=1 !!!) die Länge des Richtungsvektors bestimmen
+            df[part, 'length'] = df.apply(lambda row: np.linalg.norm(row[part]['vector']), axis=1)
     
     return df
 

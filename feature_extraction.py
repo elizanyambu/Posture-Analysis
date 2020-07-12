@@ -55,12 +55,21 @@ def dotproduct(v1, v2):
     return sum((a*b) for a, b in zip(v1, v2))
 
 def length(v):
-    return math.sqrt(dotproduct(v, v))
+    """Returns Euclidean length of a given vector."""
+    return (dotproduct(v, v))**(1/len(v))
 
 def angle(v1, v2):
-    if isinstance(v1, tuple) and isinstance(v2, tuple):
+    """Returns angle in degrees between to input *NORMALIZED* (lenght=1) vectors"""
+    if True: #isinstance(v1, tuple) and isinstance(v2, tuple):
         try:
-            result = degrees(math.acos(dotproduct(v1, v2) / (length(v1) * length(v2))))
+            # Da Input zwei nicht normalisierte Vektoroen, hier die allgemeine Funktion 
+            # zur Berechnung des Winkels zwischen diesen beiden Vektoren
+            result = math.degrees(math.acos(dotproduct(v1, v2) / (length(v1) * length(v2))))
+            
+            ## Alternative Berechnung mit numpy. Rechenzeit steigt!
+            # v1 = v1 / np.linalg.norm(v1)
+            # v2 = v2 / np.linalg.norm(v2)
+            # result = math.degrees(math.acos(dotproduct(v1, v2)))
         except:
             result = np.NaN
     else:
@@ -102,20 +111,26 @@ def FoS(df):
 def get_angle_features(df, angledict):
     output_df = pd.DataFrame()
     
-    df = calc_body_parts(df)
     # Für jedes Gelenk (bzw. jeden vorher definierten Winkel) k
     # wird jetzt der Winkel berechnet
     for k in angledict:
         # try: 
             # Wenn der zweite Parameter ein Vektor (0,1) oder (1,0) ist
             if isinstance(angledict[k][1], tuple):
-                output_df[k] = df.apply(lambda x: 180-angle(x[angledict[k][0], 'vector'],angledict[k][1]), axis=1)
+                output_df[k] = df.apply(
+                    lambda x: 
+                        angle(
+                            x[angledict[k][0], 'vector'],
+                            angledict[k][1]
+                        ), 
+                    axis=1
+                )
             # Wenn der erste Parameter ein Vektor (0,1) oder (1,0) ist
             elif isinstance(angledict[k][0], tuple):
-                output_df[k] = df.apply(lambda x: 180-angle(angledict[k][0],x[angledict[k][1]]), axis=1)
+                output_df[k] = df.apply(lambda x: angle(angledict[k][0],x[angledict[k][1], 'vector']), axis=1)
             # Wenn beide Parameter ein Körperteil sind
             else:
-                output_df[k] = df.apply(lambda x: 180-angle(x[angledict[k][0], 'vector'],x[angledict[k][1], 'vector']), axis=1)
+                output_df[k] = df.apply(lambda x: angle(x[angledict[k][0], 'vector'],x[angledict[k][1], 'vector']), axis=1)
         # except:
         #     output_df[k] = np.NaN
         #     print('Winkel ' + k + ' konnte nicht berechnet werden.')
