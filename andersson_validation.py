@@ -4,9 +4,10 @@ import glob
 import matplotlib.pyplot as plt
 from settings import *
 from cleansing import *
+from feature_extraction import *
 
 def main():
-    # extract_raw_data()
+    extract_raw_data()
     validate()
 
 def extract_raw_data():
@@ -38,6 +39,10 @@ def extract_raw_data():
             """# Scale dataset relative to [spine]"""
             temp_df = scale_coordinates(temp_df, 'LThigh')
 
+            # for body_part in FoRD_vectors_g_and_g:
+            #     print('\t\t'+body_part)
+            #     temp_df[body_part, 'FoRD'] = FoRD(temp_df, FoRD_vectors_g_and_g[body_part])
+
             # """ # """
             walking_direction = get_walking_direction(temp_df)
             temp_df['walking_direction', 'value']= walking_direction
@@ -68,18 +73,18 @@ def validate():
     # Mittlere Standardabweichung der Videos aufgeteilt nach Kinect und OpenPose
     std_per_bp = df \
         .groupby([('source', 'value'), ('videoID', 'value')]).std() \
-        .xs('length', axis=1, level=1, drop_level=True) \
+        .xs('FoRD', axis=1, level=1, drop_level=True) \
         .groupby(('source', 'value')).mean() \
         .T
 
     # Mittlege Körperteillänge der Videos aufgeteilt nach Kinect und OpenPose
     mean_per_bp = df \
         .groupby([('source', 'value'), ('videoID', 'value')]).mean() \
-        .xs('length', axis=1, level=1, drop_level=True) \
+        .xs('FoRD', axis=1, level=1, drop_level=True) \
         .groupby(('source', 'value')).mean() \
         .T
     
-
+    
     fig = plt.figure(figsize=(16,7))
     ax1 = fig.add_subplot(2,1,1)
     ax1.set_title('Mean of STD of joint length per source.')
@@ -92,4 +97,8 @@ def validate():
     ax2.plot(mean_per_bp)
     plt.show()
     
+def validate_by_feature(df):
+    FoRD_df = pd.DataFrame()
+    for body_part in FoRD_vectors_g_and_g:
+        FoRD_df[body_part] = FoRD(df, FoRD_vectors_g_and_g[body_part])
 main()
