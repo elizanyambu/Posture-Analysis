@@ -28,7 +28,7 @@ def main():
         df = pd.read_csv(filename, header=[0,1])
         df = cleansing1(df, metadata)
         print('\t01 - Data cleansed')
-        features = feature_calc(df)
+        features = feature_calc(df, metadata)
         print('\t02 - Features calculated')
         vector = feature_vector(features, df, metadata)
         print('\t03 - Vector extracted')
@@ -64,9 +64,12 @@ def cleansing1(df, metadata):
     
     if CENTER_COORDINATES:
         df = center_coordinates(df)
+    
+    if CHANGE_DIRECTION:
+        df = change_direction(df=df, walking_dir=get_walking_direction(df, metadata))
 
     if CALC_BODY_PARTS:
-        start = time.process_time()
+        # start = time.process_time()
         df = calc_body_parts(df)
         # print('\t\tCalc_body_parts:' ,time.process_time() - start)
 
@@ -82,7 +85,7 @@ def cleansing1(df, metadata):
     return df
 #
 #
-def feature_calc(df):
+def feature_calc(df, metadata):
     """# Entfernungsparameter berechnen"""
     feature_df = pd.DataFrame()
     if YANG:
@@ -108,11 +111,14 @@ def feature_calc(df):
     angle_df = pd.DataFrame()
     if ANGLES:
         start = time.process_time()
-        angle_df = get_angle_features(df, angle_dict)
+        angle_df = get_angle_features(df=df, angledict=angle_dict, walking_direction = get_walking_direction(df, metadata))
         # print('\t\tAngle_calc:' ,time.process_time() - start)
 
+    angle_symm_df = pd.DataFrame()
+    if ANGLE_SYMM:
+        angle_symm_df = get_angle_symmetries(angle_df, angle_symm_dict)
     # Ergebnis-dfs zusammenführen
-    feature_df = pd.concat([feature_df, angle_df, FoRD_df], axis=1, sort=False)
+    feature_df = pd.concat([feature_df, angle_df,angle_symm_df, FoRD_df], axis=1, sort=False)
     
     return feature_df
 #

@@ -112,9 +112,17 @@ def FoS(df):
     temp.columns = ['FoS_'+a+'_'+b for a,b in temp.columns.to_flat_index()]
     return temp.mad().to_dict()
 
-def get_angle_features(df, angledict):
+def get_angle_features(df, angledict, walking_direction):
     output_df = pd.DataFrame()
-    
+    # print(walking_direction)
+
+    if walking_direction=="left_to_right" or walking_direction=="front_to_back":
+        horizontal_vector = (-1,0)
+    elif walking_direction=="right_to_left" or walking_direction=="back_to_front":
+        horizontal_vector = (1,0)
+    else:
+        horizontal_vector = (1,0)
+
     # Für jedes Gelenk (bzw. jeden vorher definierten Winkel) k
     # wird jetzt der Winkel berechnet
     for k in angledict:
@@ -131,13 +139,72 @@ def get_angle_features(df, angledict):
                 )
             # Wenn der erste Parameter ein Vektor (0,1) oder (1,0) ist
             elif isinstance(angledict[k][0], tuple):
-                output_df[k] = df.apply(lambda x: angle(angledict[k][0],x[angledict[k][1], 'vector']), axis=1)
+                output_df[k] = df.apply(
+                    lambda x: 
+                        angle(
+                            angledict[k][0],
+                            x[angledict[k][1], 'vector']
+                        ), 
+                    axis=1
+                )
             # Wenn beide Parameter ein Körperteil sind
             else:
-                output_df[k] = df.apply(lambda x: angle(x[angledict[k][0], 'vector'],x[angledict[k][1], 'vector']), axis=1)
+                output_df[k] = df.apply(
+                    lambda x: 
+                        angle(
+                            x[angledict[k][0], 'vector'],
+                            x[angledict[k][1], 'vector']
+                            ), 
+                    axis=1
+                    )
         # except:
         #     output_df[k] = np.NaN
         #     print('Winkel ' + k + ' konnte nicht berechnet werden.')
+    
+    ##### Versuch zur manuellen (d.h. unabh. vom settings-Dictionary) Nerechnung der Winkel #####
+   
+
+    # output_df['LKnee_Angle_manual'] = \
+    #     df.apply(lambda x: 
+    #         angle(
+    #             x['LThighManual', 'vector'],
+    #             horizontal_vector
+    #         ),axis=1) + \
+    #     df.apply(lambda x: 
+    #         angle(
+    #             x['LLowerleg', 'vector'],
+    #             horizontal_vector
+    #         ), axis=1)
+    
+    # output_df['RKnee_Angle_manual'] = \
+    #     df.apply(lambda x: 
+    #         angle(
+    #             x['RThighManual', 'vector'],
+    #             horizontal_vector
+    #         ),axis=1) + \
+    #     df.apply(lambda x: 
+    #         angle(
+    #             x['RLowerleg', 'vector'],
+    #             horizontal_vector
+    #         ), axis=1)
+
+    ### Da in der Seitenansicht ein Arm kaum sichtbar ist, hier die Korrekt ### 
+    if walking_direction=="left_to_right":
+        output_df['LElbowAngle'] =  output_df['RElbowAngle']
+    elif walking_direction=="right_to_left":
+        output_df['RElbowAngle'] =  output_df['LElbowAngle']
+
+    return output_df
+
+def get_angle_symmetries(df, angle_symm_dict):
+    output_df = pd.DataFrame()
+    for k in angle_symm_dict:
+        # print(k, angle_symm_dict[k])
+        angles = angle_symm_dict[k]
+        output_df[k + "_symm"] = (df[angles[0]]-df[angles[1]]).abs()
+
+    # print(output_df)
+
     return output_df
 
 def get_stride_length(df):

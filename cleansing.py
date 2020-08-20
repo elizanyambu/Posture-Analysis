@@ -78,13 +78,13 @@ def get_walking_direction(df, metadata):
     result = "unknown"
     if isinstance(metadata, dict) and len(metadata)>3:
         # Metadaten verfügbar
-        if metadata['perspective'] == 'side':
+        if metadata['perspective'] == 'lateral':
             # Sagittal
             if  df['LBigToe']['X'].mean() < df['LAnkle']['X'].mean():
                 result = 'right_to_left'
             else:
                 result = 'left_to_right'
-        elif metadata['perspective'] == 'front':
+        elif metadata['perspective'] == 'frontal':
             # frontal
             lkneeleft = (df['LKnee']['X'] < df['RKnee']['X']).mean()
             rkneeleft = (df['RKnee']['X'] < df['LKnee']['X']).mean()
@@ -185,6 +185,16 @@ def center_coordinates(df, center_joint='MidHip'):
     df_reference = df[[center_joint]]
     for column in df.columns:
         df[column] = df[column] - df_reference[center_joint, column[1]]
+    return df
+
+def change_direction(df, walking_dir):
+    if walking_dir=='right_to_left':
+        for joint in df.columns.levels[0]:
+           
+            try:
+                df[joint, 'X'] = df[joint, 'X'].max() - df[joint, 'X']
+            except:
+                print('\t\t\t Could not invert: ', joint)
     return df
 
 def flip_y_axis(df):
