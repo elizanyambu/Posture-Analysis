@@ -1,10 +1,11 @@
 
 # Parametrization
-FOS = False
+FOS = True
 FORD = False
-YANG = False
-GAIT_MED = False
+YANG = True
+GAIT_MED = True
 ANGLES = True
+ANGLE_SYMM = True
 
 # Cleansing
 TRIM_DATASET = True
@@ -12,11 +13,12 @@ FILL_EMTY_FRAMES = True
 SMOOTHEN_DATASET = True
 CLEAN_BY_JOINT_LENGTH = False
 CENTER_COORDINATES = True
-SCALE_COORDINATES = False #!!
+SCALE_COORDINATES = True #!!
 CALC_BODY_PARTS = True
+CHANGE_DIRECTION = False # Gain independence from lateral walking direction
 
 # Folder that contains all relevant _raw.csv files 
-path_to_training_data = r'training_data_front'
+path_to_training_data = r'training_data_final'
 # Outputfile
 output_file = 'result_data.csv'
 
@@ -35,8 +37,14 @@ body_parts = {
     "RForearm": ("RElbow", "RWrist"),
     "NeckNose": ("Neck", "Nose"),
     "Hip": ("LHip", "RHip"), 
-    "HipL": ("RHip", "LHip") # Für linken Winkel zwischen Hüfte und Oberschenkel
+    "HipR": ("RHip", "LHip"), # Für rechten Winkel zwischen Hüfte und Oberschenkel
+    "LThighManual": ("LKnee", "LHip"),
+    "RThighManual": ("RKnee", "RHip"),
+    "LUpperArmManual": ("LElbow", "LShoulder"),
+    "RUpperArmManual": ("RElbow", "RShoulder"),
 }
+#
+#
 # anthropometric features in Gianaria and Grangett0
 FoRD_vectors_g_and_g = {
     # Body-fix features
@@ -62,12 +70,13 @@ FoRD_vectors_g_and_g = {
     "LRAnkle": ["LAnkle", "RAnkle"], #FoRD26 --> Yang Dx1
     "LRFoot": ["LBigToe", "RBigToe"] #FoRD27
 }
-
+#
+#
 angle_dict = {
     'LKneeAngle': ['LThigh','LLowerleg'],
     'RKneeAngle': ['RLowerleg','RThigh'],
     'LFootAngle': ['LFoot','LLowerleg'],
-    'RFootAngle': ['LLowerleg','RFoot'],
+    'RFootAngle': ['RLowerleg','RFoot'],
     'LElbowAngle': ['LUpperArm','LForearm'],
     'RElbowAngle': ['RForearm','RUpperArm'],
     'UpperBodyAngle': ['Spine', (0,1)],
@@ -75,7 +84,18 @@ angle_dict = {
     'RUpperArmAngle': [(0,1),'RUpperArm'],
     'HipToVerticalAngle': ['Hip',(0,1)],
     'HipToHorizontalAngle': ['Hip',(1,0)],
-    'HipSpineAngle': ['HipL', 'Spine'],
-    'LThighHipAngle': ['LThigh', 'HipL'],
-    'RThighHipAngle': ['Hip', 'RThigh'],
+    'HipSpineAngle': ['Hip', 'Spine'],
+    'LThighHipAngle': ['LThigh', 'Hip'], 
+    'RThighHipAngle': ['HipR', 'RThigh'], # HipR !
+    'LThighToVerticalAngle': ['LThigh', (1,0)], 
+    'RThighToVerticalAngle': ['RThigh', (1,0)], 
+}
+#
+#
+angle_symm_dict = {
+    'Knee': ['LKneeAngle', 'RKneeAngle'],
+    'Foot': ['LFootAngle', 'RFootAngle'],
+    'Elbow': ['LElbowAngle', 'RElbowAngle'],
+    'UpperArm': ['LUpperArmAngle', 'RUpperArmAngle'],
+    'ThighHip': ['LThighHipAngle', 'RThighHipAngle'],
 }

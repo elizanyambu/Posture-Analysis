@@ -1,106 +1,8 @@
+
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from settings import body_parts, CLEAN_BY_JOINT_LENGTH, SCALE_COORDINATES
 
-
-# def main():
-#     df = pd.read_csv('training_data/gesund_Jonas_02_side_fps30_raw_Jeans_LtR.csv', header=[0,1])
-
-#     functions = [flip_y_axis,trim_gait_dataset, fill_missing_values, smooth_data,  center_coordinates, scale_coordinates]
-#     # plt_joints = [('LKnee', 'Y'), ('RKnee', 'Y'), ('LAnkle', 'Y'), ('RAnkle', 'Y'), ('MidHip', 'Y'), ('Nose', 'Y')]
-#     plt_joints = [('LElbow', 'Y'), ('RElbow', 'Y')]
-#     fig = plt.figure(figsize=(10,30))
-#     ax = fig.add_subplot(len(functions)+1,1,1)
-#     ax.plot(df[plt_joints])
-#     ax.set_title('raw')
-#     i = 2
-#     for funct in functions:
-#         df = funct(df)
-#         ax = fig.add_subplot(len(functions)+1,1,i)
-#         ax.plot(df[plt_joints])
-#         ax.set_title(funct.__name__)
-#         # ax.set_hspace(0.3)
-#         i+=1
-#     plt.subplots_adjust(hspace=0.6)
-#     plt.show()
-#     # print(center_coordinates(df))
-    
-#     # df = calc_body_parts(df)
-#     # print(df)
-
-#     # df = clean_by_joint_length(df)
-#     # print(df)
-
-#     # print(get_walking_direction(df))
-
-def standard_cleansing(df, videoID):
-    df = flip_y_axis(df)
-
-    df = trim_gait_dataset(df)
-
-    """# Fehlende Daten in der Mitte interpolieren"""
-    df = fill_missing_values(df)
-
-    """# Daten glätten"""
-    df = smooth_data(df)
-
-    df = center_coordinates(df)
-
-    """# Scale dataset relative to [spine]"""
-    metadata = get_metadata(videoID)
-    walking_dir = get_walking_direction(df, metadata)
-    df = scale_coordinates(df,walking_dir, 'Spine')
-
-    return df
-
-def get_metadata(videoID):
-    ls = videoID[:-4].split('_')
-    metadata = {
-        'label': ls[0],
-        'personID': ls[1],
-        'gaitNumber': ls[2],
-        'perspective': ls[3],
-        'fps': int(ls[4][3:]),
-        'notes': '_'.join(ls[5:])
-    }
-    return metadata
-
-def get_walking_direction(df, metadata):
-    """ 
-        Returns the walking direction of the input DataFrame
-
-        ### Parameter \n
-            df:     pd.DataFrame() containing the joint coordinates over time/frames
-        ### Returns \n
-            str: 'right_to_left' or 'left_to_right' or 'back_to_front' or 'front_to_back'
-    """
-    result = "unknown"
-    if isinstance(metadata, dict) and len(metadata)>3:
-        # Metadaten verfügbar
-        if metadata['perspective'] == 'side':
-            # Sagittal
-            if  df['LBigToe']['X'].mean() < df['LAnkle']['X'].mean():
-                result = 'right_to_left'
-            else:
-                result = 'left_to_right'
-        elif metadata['perspective'] == 'front':
-            # frontal
-            lkneeleft = (df['LKnee']['X'] < df['RKnee']['X']).mean()
-            rkneeleft = (df['RKnee']['X'] < df['LKnee']['X']).mean()
-            if lkneeleft > 0.8:
-                # "In mehr als 80% der Frames ist das linke Bein links vom rechten Bein"
-                result = 'front_to_back' 
-            elif rkneeleft > 0.8:
-                # "In mehr als 80% der Frames ist das rechte Bein links vom linken Bein"
-                result = 'back_to_front'
-        else:
-            # Perspektive nicht bekannt
-            print('Perspektive nicht aus Metadaten erkannt')
-    else:
-        # Metadaten nicht verfügbar
-        print('Metadaten wurden nicht korrekt an get_walking_direction() übergeben')
-    return result
+import settings
 
 def trim_gait_dataset(df):
     joints_to_be_detected = ['RAnkle', 'LAnkle', 'LBigToe', 'RBigToe']
@@ -136,18 +38,21 @@ def trim_gait_dataset(df):
     df = df.drop(['LEar', 'REar', 'LEye', 'REye'], axis=1)
 
     return df
-
+#
+#
 def fill_missing_values(df):
     df_interpolate = df.replace(to_replace=0.0, value=np.NaN)
     df = df_interpolate.interpolate(method='linear')
     return df
-
+#
+#
 def smooth_data(df, rwindow=5):
     for col in df.columns:
         df[col] = df[col].rolling(window=rwindow).mean()
     return df 
-
-def scale_coordinates(df, walking_dir="left_to_right", rel_part='Spine'):
+#
+#
+def scale_coordinates(df, walking_dir, rel_part='Spine'):
     """ 
         Scales the coordinates relative to the mean spine length.
 
@@ -158,16 +63,17 @@ def scale_coordinates(df, walking_dir="left_to_right", rel_part='Spine'):
     """
     orig_columns = df.columns
 
-    if not(rel_part in df.columns):
-        temp_df = calc_body_parts(df, body_parts)
-    else:
-        temp_df = df
+    temp_df = calc_body_parts(df, {"Spine": ("MidHip", "Neck")})
+
     if walking_dir == 'left_to_right' or walking_dir == 'right_to_left':
         # Datensatz mit Durchschnitt skalieren
         len_of_rel_part_mean = temp_df[rel_part, 'length'].mean()
+
+
     elif walking_dir == 'front_to_back' or walking_dir == 'back_to_front':
         # Datensatz pro frame skalieren
         len_of_rel_part_mean = temp_df[rel_part, 'length'].rolling(window=5).mean()
+    
     else:
         print('Walking direction \'' + walking_dir + '\' nicht erkannt. Koordinaten nicht skaliert.')
         len_of_rel_part_mean = 1
@@ -175,31 +81,25 @@ def scale_coordinates(df, walking_dir="left_to_right", rel_part='Spine'):
     for a,b in df.columns:
         if b != 'vector':
             df[a,b] = df[a,b] / len_of_rel_part_mean
-        else:
+        elif b == 'vector':
             df[a,b] = df[a,b].apply(lambda x: (x[0]/len_of_rel_part_mean, x[1]/len_of_rel_part_mean))
     
     
     return df.loc[:,orig_columns]
-
+#
+#
 def center_coordinates(df, center_joint='MidHip'):
+    """
+        Transforms all coordinates so that the center_joint='MidHip' 
+        is the new origin of the coordinate system.
+    """
     df_reference = df[[center_joint]]
     for column in df.columns:
         df[column] = df[column] - df_reference[center_joint, column[1]]
     return df
-
-def flip_y_axis(df):
-    """
-        Dreht die Y-Achse um. Der Koordinatenursprung der OpenPose-Daten ist **oben** links im Bild.
-        Diese Funktion setzt den Ursprung nach **unten** Links. \n
-    """
-    try:
-        for joint in df.columns.levels[0]:
-            df[joint, 'Y'] = 1 - df[joint, 'Y']
-    except:
-        print('Y-Axis flip failed')
-    return df
-
-def clean_by_joint_length(df, body_parts=body_parts):
+#
+#
+def clean_by_joint_length(df, body_parts=settings.body_parts):
     """ 
         ...
 
@@ -224,8 +124,9 @@ def clean_by_joint_length(df, body_parts=body_parts):
         #df[body_part]['length'] = df.iloc[:, (body_part, 'length')].apply(lambda x: x if (x <= limit_max and x >= limit_min) else np.NaN)
 
     return df
-
-def calc_body_parts(df, body_parts=body_parts):
+#
+#
+def calc_body_parts(df, body_parts=settings.body_parts):
     """ 
         ...
 
@@ -239,13 +140,11 @@ def calc_body_parts(df, body_parts=body_parts):
         p1, p2 = body_parts[part]
         
         # Richtungsvektor als Tuple darstellen
-        df[part, 'vector'] = list(zip(df[p1]['X'] - df[p2]['X'], df[p1]['Y'] - df[p2]['Y']))
-       
+        df[(part, 'vector')] = list(zip(df[p1]['X'] - df[p2]['X'], df[p1]['Y'] - df[p2]['Y']))
+        
         # Längenberechnung potentiell rechenintensiv --> Nur durchführen, wenn wirklich nötig
-        if CLEAN_BY_JOINT_LENGTH or SCALE_COORDINATES:
+        if settings.CLEAN_BY_JOINT_LENGTH or settings.SCALE_COORDINATES:
             # Für jede Zeile (deswegen axis=1 !!!) die Länge des Richtungsvektors bestimmen
             df[part, 'length'] = df.apply(lambda row: np.linalg.norm(row[part]['vector']), axis=1)
-    
     return df
 
-# main()
