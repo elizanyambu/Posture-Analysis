@@ -3,7 +3,7 @@
 FOS = True
 FORD = False
 YANG = True
-GAIT_MED = False
+GAIT_MED = True
 ANGLES = True
 ANGLE_SYMM = True
 
@@ -43,6 +43,8 @@ body_parts = {
     "LUpperArmManual": ("LElbow", "LShoulder"),
     "RUpperArmManual": ("RElbow", "RShoulder"),
 }
+#
+#
 # anthropometric features in Gianaria and Grangett0
 FoRD_vectors_g_and_g = {
     # Body-fix features
@@ -68,7 +70,8 @@ FoRD_vectors_g_and_g = {
     "LRAnkle": ["LAnkle", "RAnkle"], #FoRD26 --> Yang Dx1
     "LRFoot": ["LBigToe", "RBigToe"] #FoRD27
 }
-
+#
+#
 angle_dict = {
     'LKneeAngle': ['LThigh','LLowerleg'],
     'RKneeAngle': ['RLowerleg','RThigh'],
@@ -84,8 +87,11 @@ angle_dict = {
     'HipSpineAngle': ['Hip', 'Spine'],
     'LThighHipAngle': ['LThigh', 'Hip'], 
     'RThighHipAngle': ['HipR', 'RThigh'], # HipR !
+    'LThighToVerticalAngle': ['LThigh', (1,0)], 
+    'RThighToVerticalAngle': ['RThigh', (1,0)], 
 }
-
+#
+#
 angle_symm_dict = {
     'Knee': ['LKneeAngle', 'RKneeAngle'],
     'Foot': ['LFootAngle', 'RFootAngle'],
