@@ -64,7 +64,8 @@ def main():
     os.remove('result_data_temp.csv')
     
     print(result)
-
+#
+#
 def clean_the_data(df, metadata):
     """
         Cleans the input df as defined in the settings file
@@ -107,7 +108,8 @@ def clean_the_data(df, metadata):
         df = cleansing_script.clean_by_joint_length(df, settings.body_parts)    
 
     return df
-
+#
+#
 def calculate_temporal_features(df, metadata):
     """
 
@@ -151,7 +153,8 @@ def calculate_temporal_features(df, metadata):
     )
 
     return feature_df
-
+#
+#
 def aggregate_fetures(temporal_features, orig_df, metadata):
     """
 
@@ -192,5 +195,6 @@ def aggregate_fetures(temporal_features, orig_df, metadata):
     result = pd.DataFrame(feature_vector, index=[metadata['personID']+'_' +metadata['gaitNumber']])
 
     return result
-
+#
+#
 main()

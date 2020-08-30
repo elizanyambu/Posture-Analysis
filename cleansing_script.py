@@ -52,7 +52,7 @@ def smooth_data(df, rwindow=5):
     return df 
 #
 #
-def scale_coordinates(df, walking_dir, rel_part='Spine'):
+def scale_coordinates(df, walking_dir="front_to_back", rel_part='Spine'):
     """ 
         Scales the coordinates relative to the mean spine length.
 
