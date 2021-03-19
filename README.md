@@ -1,4 +1,4 @@
-# Jonas' Repository zur Entwicklungsarbeit im Projektstudium
+# Repository zur Entwicklungsarbeit im Projektstudium
 
 # Aktuelle Architektur
 
